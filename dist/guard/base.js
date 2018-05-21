@@ -39,9 +39,6 @@ var BaseGuard = function () {
       priority: function priority(job, cb) {
         return cb(null, job.priority || 1);
       },
-      maxRetries: 5,
-      retryDelay: 100,
-      cancelIfRunning: true,
       concurrent: this.opts.concurrent
     });
     this.queue.addJob = function (promise, priority, opts) {

@@ -23,9 +23,6 @@ class BaseGuard {
         store: new MemoryStore({}),
         id: 'id',
         priority: (job, cb) => cb(null, job.priority || 1),
-        maxRetries: 5,
-        retryDelay: 100,
-        cancelIfRunning: true,
         concurrent: this.opts.concurrent
       }
     );
