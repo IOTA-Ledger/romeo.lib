@@ -159,28 +159,37 @@ var BaseGuard = function () {
               case 0:
                 promiseFactory = function promiseFactory() {
                   return new Promise(function () {
-                    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(resolve) {
+                    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(resolve, reject) {
                       return regeneratorRuntime.wrap(function _callee$(_context) {
                         while (1) {
                           switch (_context.prev = _context.next) {
                             case 0:
+                              _context.prev = 0;
                               _context.t0 = resolve;
-                              _context.next = 3;
+                              _context.next = 4;
                               return _this2._getPages(index, total);
 
-                            case 3:
+                            case 4:
                               _context.t1 = _context.sent;
                               (0, _context.t0)(_context.t1);
+                              _context.next = 11;
+                              break;
 
-                            case 5:
+                            case 8:
+                              _context.prev = 8;
+                              _context.t2 = _context['catch'](0);
+
+                              reject(_context.t2);
+
+                            case 11:
                             case 'end':
                               return _context.stop();
                           }
                         }
-                      }, _callee, _this2);
+                      }, _callee, _this2, [[0, 8]]);
                     }));
 
-                    return function (_x4) {
+                    return function (_x4, _x5) {
                       return _ref2.apply(this, arguments);
                     };
                   }());
@@ -232,32 +241,41 @@ var BaseGuard = function () {
               case 0:
                 promiseFactory = function promiseFactory() {
                   return new Promise(function () {
-                    var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(resolve) {
+                    var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(resolve, reject) {
                       return regeneratorRuntime.wrap(function _callee3$(_context3) {
                         while (1) {
                           switch (_context3.prev = _context3.next) {
                             case 0:
-                              _context3.next = 2;
+                              _context3.prev = 0;
+                              _context3.next = 3;
                               return _this3._setActivePage(pageIndex);
 
-                            case 2:
+                            case 3:
                               _context3.t0 = resolve;
-                              _context3.next = 5;
+                              _context3.next = 6;
                               return _this3._getAddresses(index, total);
 
-                            case 5:
+                            case 6:
                               _context3.t1 = _context3.sent;
                               (0, _context3.t0)(_context3.t1);
+                              _context3.next = 13;
+                              break;
 
-                            case 7:
+                            case 10:
+                              _context3.prev = 10;
+                              _context3.t2 = _context3['catch'](0);
+
+                              reject(_context3.t2);
+
+                            case 13:
                             case 'end':
                               return _context3.stop();
                           }
                         }
-                      }, _callee3, _this3);
+                      }, _callee3, _this3, [[0, 10]]);
                     }));
 
-                    return function (_x9) {
+                    return function (_x10, _x11) {
                       return _ref4.apply(this, arguments);
                     };
                   }());
@@ -280,7 +298,7 @@ var BaseGuard = function () {
         }, _callee4, this);
       }));
 
-      function getAddresses(_x6, _x7, _x8) {
+      function getAddresses(_x7, _x8, _x9) {
         return _ref3.apply(this, arguments);
       }
 
@@ -311,29 +329,39 @@ var BaseGuard = function () {
               case 0:
                 promiseFactory = function promiseFactory() {
                   return new Promise(function () {
-                    var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(resolve) {
+                    var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(resolve, reject) {
                       return regeneratorRuntime.wrap(function _callee5$(_context5) {
                         while (1) {
                           switch (_context5.prev = _context5.next) {
                             case 0:
+                              _context5.prev = 0;
+
                               _this4._setActivePage(pageIndex);
                               _context5.t0 = resolve;
-                              _context5.next = 4;
+                              _context5.next = 5;
                               return _this4._getSignedTransactions(transfers, inputs, remainder);
 
-                            case 4:
+                            case 5:
                               _context5.t1 = _context5.sent;
                               (0, _context5.t0)(_context5.t1);
+                              _context5.next = 12;
+                              break;
 
-                            case 6:
+                            case 9:
+                              _context5.prev = 9;
+                              _context5.t2 = _context5['catch'](0);
+
+                              reject(_context5.t2);
+
+                            case 12:
                             case 'end':
                               return _context5.stop();
                           }
                         }
-                      }, _callee5, _this4);
+                      }, _callee5, _this4, [[0, 9]]);
                     }));
 
-                    return function (_x15) {
+                    return function (_x17, _x18) {
                       return _ref6.apply(this, arguments);
                     };
                   }());
@@ -356,7 +384,7 @@ var BaseGuard = function () {
         }, _callee6, this);
       }));
 
-      function getSignedTransactions(_x11, _x12, _x13, _x14) {
+      function getSignedTransactions(_x13, _x14, _x15, _x16) {
         return _ref5.apply(this, arguments);
       }
 
@@ -389,7 +417,7 @@ var BaseGuard = function () {
         }, _callee7, this);
       }));
 
-      function _setActivePage(_x16) {
+      function _setActivePage(_x19) {
         return _ref7.apply(this, arguments);
       }
 
@@ -423,7 +451,7 @@ var BaseGuard = function () {
         }, _callee8, this);
       }));
 
-      function _getPages(_x17, _x18) {
+      function _getPages(_x20, _x21) {
         return _ref8.apply(this, arguments);
       }
 
@@ -457,7 +485,7 @@ var BaseGuard = function () {
         }, _callee9, this);
       }));
 
-      function _getAddresses(_x19, _x20) {
+      function _getAddresses(_x22, _x23) {
         return _ref9.apply(this, arguments);
       }
 
@@ -492,7 +520,7 @@ var BaseGuard = function () {
         }, _callee10, this);
       }));
 
-      function _getSignedTransactions(_x21, _x22, _x23) {
+      function _getSignedTransactions(_x24, _x25, _x26) {
         return _ref10.apply(this, arguments);
       }
 
