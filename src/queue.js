@@ -23,7 +23,8 @@ function createQueue(options) {
       store: new MemoryStore({}),
       id: 'id',
       priority: (job, cb) => cb(null, job.priority || 1),
-      maxRetries: 5,
+      // disable retrying for now, to get potential ledger errors at once
+      // maxRetries: 5,
       retryDelay: 1000,
       cancelIfRunning: true,
       precondition: cb => checkOnline().then(online => cb(null, online)),
