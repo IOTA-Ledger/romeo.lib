@@ -8,7 +8,7 @@ const DEFAULT_OPTIONS = {
 };
 
 class BaseGuard {
-  constructor (options) {
+  constructor(options) {
     this.opts = Object.assign({}, DEFAULT_OPTIONS, options);
     // The guard queue will manage all the requests.
     // This allows setting a 1-lane concurrency, for example.
@@ -23,9 +23,6 @@ class BaseGuard {
         store: new MemoryStore({}),
         id: 'id',
         priority: (job, cb) => cb(null, job.priority || 1),
-        maxRetries: 5,
-        retryDelay: 100,
-        cancelIfRunning: true,
         concurrent: this.opts.concurrent
       }
     );
@@ -48,11 +45,13 @@ class BaseGuard {
    * @param {Object} options
    * @returns {*}
    */
-  setupIOTA (options) {
-    this.iota = createAPI(Object.assign({}, options, {
-      password: this.getSymmetricKey(),
-      guard: this
-    }));
+  setupIOTA(options) {
+    this.iota = createAPI(
+      Object.assign({}, options, {
+        password: this.getSymmetricKey(),
+        guard: this
+      })
+    );
     return this.iota;
   }
 
@@ -62,7 +61,7 @@ class BaseGuard {
    * @param pageIndex
    * @returns {string|null}
    */
-  getPageSeed (pageIndex) {
+  getPageSeed(pageIndex) {
     return null;
   }
 
@@ -71,7 +70,7 @@ class BaseGuard {
    * 0 = unlimited
    * @returns {number}
    */
-  getMaxOutputs () {
+  getMaxOutputs() {
     return 6;
   }
 
@@ -80,7 +79,7 @@ class BaseGuard {
    * 0 = unlimited
    * @returns {number}
    */
-  getMaxInputs () {
+  getMaxInputs() {
     return 6;
   }
 
@@ -90,7 +89,7 @@ class BaseGuard {
    * @param pageIndex
    * @returns {string|null}
    */
-  getChecksum () {
+  getChecksum() {
     return null;
   }
 
@@ -99,7 +98,7 @@ class BaseGuard {
    * Should be overridden!
    * @returns {String}
    */
-  getSymmetricKey () {
+  getSymmetricKey() {
     throw new Error('not implemented!');
   }
 
@@ -110,17 +109,20 @@ class BaseGuard {
    * @param {int} priority
    * @returns {Promise<String[]>}
    */
-  async getPages (index, total, priority = 1) {
-    const promiseFactory = () => new Promise (async (resolve) => {
-      resolve(await this._getPages(index, total));
-    });
+  async getPages(index, total, priority = 1) {
+    const promiseFactory = () =>
+      new Promise(async (resolve, reject) => {
+        try {
+          resolve(await this._getPages(index, total));
+        } catch (err) {
+          reject(err);
+        }
+      });
 
     return new Promise((resolve, reject) => {
-      const job = this.queue.addJob(
-        promiseFactory,
-        priority,
-        { type: 'GET_PAGES' }
-      );
+      const job = this.queue.addJob(promiseFactory, priority, {
+        type: 'GET_PAGES'
+      });
       job.on('finish', resolve);
       job.on('failed', reject);
     });
@@ -134,18 +136,22 @@ class BaseGuard {
    * @param {int} priority
    * @returns {Promise<String[]>}
    */
-  async getAddresses (pageIndex, index, total, priority = 1) {
-    const promiseFactory = () => new Promise (async (resolve) => {
-      await this._setActivePage(pageIndex);
-      resolve(await this._getAddresses(index, total));
-    });
+  async getAddresses(pageIndex, index, total, priority = 1) {
+    const promiseFactory = () =>
+      new Promise(async (resolve, reject) => {
+        try {
+          await this._setActivePage(pageIndex);
+          resolve(await this._getAddresses(index, total));
+        } catch (err) {
+          reject(err);
+        }
+      });
 
     return new Promise((resolve, reject) => {
-      const job = this.queue.addJob(
-        promiseFactory,
-        priority,
-        { page: pageIndex, type: 'GET_ADDRESSES' }
-      );
+      const job = this.queue.addJob(promiseFactory, priority, {
+        page: pageIndex,
+        type: 'GET_ADDRESSES'
+      });
       job.on('finish', resolve);
       job.on('failed', reject);
     });
@@ -160,18 +166,30 @@ class BaseGuard {
    * @param {int} priority
    * @returns {Promise<string[]>}
    */
-  async getSignedTransactions (pageIndex, transfers, inputs, remainder, priority = 1) {
-    const promiseFactory = () => new Promise (async (resolve) => {
-      this._setActivePage(pageIndex);
-      resolve(await this._getSignedTransactions(transfers, inputs, remainder));
-    });
+  async getSignedTransactions(
+    pageIndex,
+    transfers,
+    inputs,
+    remainder,
+    priority = 1
+  ) {
+    const promiseFactory = () =>
+      new Promise(async (resolve, reject) => {
+        try {
+          this._setActivePage(pageIndex);
+          resolve(
+            await this._getSignedTransactions(transfers, inputs, remainder)
+          );
+        } catch (err) {
+          reject(err);
+        }
+      });
 
     return new Promise((resolve, reject) => {
-      const job = this.queue.addJob(
-        promiseFactory,
-        priority,
-        { page: pageIndex, type: 'GET_SIGNED_TRANSACTIONS' }
-      );
+      const job = this.queue.addJob(promiseFactory, priority, {
+        page: pageIndex,
+        type: 'GET_SIGNED_TRANSACTIONS'
+      });
       job.on('finish', resolve);
       job.on('failed', reject);
     });
@@ -184,7 +202,7 @@ class BaseGuard {
    * @param {int} pageIndex
    * @private
    */
-  async _setActivePage (pageIndex) {
+  async _setActivePage(pageIndex) {
     this.activePageIndex = pageIndex;
   }
 
@@ -196,7 +214,7 @@ class BaseGuard {
    * @returns {Promise<string[]>}
    * @private
    */
-  async _getPages (index, total) {
+  async _getPages(index, total) {
     throw new Error('not implemented!');
   }
 
@@ -208,7 +226,7 @@ class BaseGuard {
    * @returns {Promise<string[]>}
    * @private
    */
-  async _getAddresses (index, total) {
+  async _getAddresses(index, total) {
     throw new Error('not implemented!');
   }
 
@@ -221,7 +239,7 @@ class BaseGuard {
    * @returns {Promise<string[]>}
    * @private
    */
-  async _getSignedTransactions (transfers, inputs, remainder) {
+  async _getSignedTransactions(transfers, inputs, remainder) {
     // IMPORTANT: if the activePageIndex is < 0,
     // then it is a TX for the ledger seed!
     throw new Error('not implemented!');
