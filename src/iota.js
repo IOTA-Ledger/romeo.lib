@@ -8,7 +8,7 @@ function createAPI({ path, password, provider, database, guard }) {
   const iota = new IOTA({ provider: provider || IOTA_API_ENDPOINT });
   const getTrytes = iota.api.getTrytes.bind(iota.api);
 
-  iota.api.getTrytes = function(hashes, callback) {
+  iota.api.getTrytes = function (hashes, callback) {
     // First, get trytes from db
     db.getMany(hashes.map(h => `tryte-${h}`)).then(result => {
       // See what we don't have
@@ -221,12 +221,12 @@ function createAPI({ path, password, provider, database, guard }) {
     getTransactions(address, process(), process(true), cachedOnly);
   }
 
-  function getNewAddress (pageIndex, index, total, callback) {
+  function getNewAddress(pageIndex, index, total, callback) {
     if (!guard) throw new Error('guard has not been set up!');
     _getNewAddress(iota.api, guard, pageIndex, index, total, callback, false);
   }
 
-  function sendTransfer (pageIndex, depth, minWeightMagnitude, transfers, options, callback) {
+  function sendTransfer(pageIndex, depth, minWeightMagnitude, transfers, options, callback) {
     if (!guard) throw new Error('guard has not been set up!');
     _sendTransfer(iota.api, guard, pageIndex, depth, minWeightMagnitude, transfers, options, callback);
   }
@@ -245,7 +245,7 @@ function createAPI({ path, password, provider, database, guard }) {
   return iota;
 }
 
-function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, returnAll = true) {
+function _getNewAddress(api, guard, seedOrPageIndex, index, total, callback, returnAll = true) {
   if (!guard) {
     api.getNewAddress(seedOrPageIndex, { returnAll, total }, callback);
   } else {
@@ -260,7 +260,11 @@ function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, re
       // If total number of addresses to generate is supplied, simply generate
       // and return the list of all addresses
       if (total) {
-        return callback(null, await getter(index, total));
+        try {
+          return callback(null, await getter(index, total));
+        } catch (err) {
+          return callback(err);
+        }
       }
       //  Case 2: no total provided
       //
@@ -268,7 +272,7 @@ function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, re
       //  if null, return list of addresses
       //
       else {
-        async.doWhilst(function(callback) {
+        async.doWhilst(function (callback) {
           // Iteratee function
           getter(index, 1).then(addresses => {
             const newAddress = addresses[0];
@@ -289,7 +293,7 @@ function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, re
               if (res[0]) {
                 callback(null, newAddress, true, index - 1)
               } else { // Check for txs if address isn't spent
-                api.findTransactions({'addresses': [newAddress]}, function (err, transactions) {
+                api.findTransactions({ 'addresses': [newAddress] }, function (err, transactions) {
                   if (err) {
                     return callback(err)
                   }
@@ -297,11 +301,11 @@ function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, re
                 })
               }
             })
-          });
+          }).catch(err => callback(err));
 
         }, function (address, isUsed) {
           return isUsed
-        }, function(err, address, isUsed, index) {
+        }, function (err, address, isUsed, index) {
           if (err) {
             return callback(err);
           } else {
@@ -313,7 +317,7 @@ function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, re
   }
 }
 
-function _sendTransfer (api, guard, seedOrPageIndex, depth, minWeightMagnitude, transfers, options, callback) {
+function _sendTransfer(api, guard, seedOrPageIndex, depth, minWeightMagnitude, transfers, options, callback) {
   if (!guard) {
     return api.sendTransfer(seedOrPageIndex, depth, minWeightMagnitude, transfers, options, callback);
   }
