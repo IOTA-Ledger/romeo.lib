@@ -179,7 +179,8 @@ var Pages = function (_BasePage) {
     key: 'syncCurrentPage',
     value: function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-        var priority = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30;
+        var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 30;
         var currentPage;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
@@ -193,7 +194,7 @@ var Pages = function (_BasePage) {
                 }
 
                 _context2.next = 4;
-                return this.syncPage(currentPage, true, priority);
+                return this.syncPage(currentPage, force, priority);
 
               case 4:
                 _context2.t0 = _context2.sent;

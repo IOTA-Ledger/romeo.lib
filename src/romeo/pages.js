@@ -105,10 +105,10 @@ class Pages extends BasePage {
     return await page.sync(force, priority);
   }
 
-  async syncCurrentPage(priority = 30) {
+  async syncCurrentPage(force = false, priority = 30) {
     const currentPage = this.getCurrent();
     return currentPage && !currentPage.isSynced()
-      ? await this.syncPage(currentPage, true, priority)
+      ? await this.syncPage(currentPage, force, priority)
       : null;
   }
 }
