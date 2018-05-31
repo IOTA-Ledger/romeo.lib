@@ -23,9 +23,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var _require = require('./base'),
     BaseGuard = _require.BaseGuard;
 
+var _require2 = require('../config'),
+    LEDGER_APP_MIN_VERSION = _require2.LEDGER_APP_MIN_VERSION;
+
+var util = require('util');
+
 // use testnet path for now
-
-
 var BIP44_PATH = "44'/1'/0'";
 var DUMMY_SEED = '9'.repeat(81);
 
@@ -330,7 +333,7 @@ var LedgerGuard = function (_BaseGuard) {
     key: 'build',
     value: function () {
       var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(options) {
-        var opts, transport, hwapp, keyAddress;
+        var opts, transport, hwapp, appConfig, appVersion, keyAddress;
         return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -349,17 +352,34 @@ var LedgerGuard = function (_BaseGuard) {
                 transport.setExchangeTimeout(60000);
                 hwapp = new _hwAppIota2.default(transport);
                 _context7.next = 9;
-                return LedgerGuard._setInternalSeed(hwapp, 2);
+                return LedgerGuard._getAppConfig(hwapp);
 
               case 9:
-                _context7.next = 11;
+                appConfig = _context7.sent;
+                appVersion = appConfig.app_version_major << 16 | appConfig.app_version_minor << 8 | appConfig.app_version_patch;
+
+                if (!(appVersion < LEDGER_APP_MIN_VERSION)) {
+                  _context7.next = 13;
+                  break;
+                }
+
+                throw new Error(util.format('Your IOTA-Ledger app version is outdated (v%s.%s.%s)! You must update to version v%s.%s.%s before you can login!', appConfig.app_version_major, appConfig.app_version_minor, appConfig.app_version_patch, LEDGER_APP_MIN_VERSION >> 16 & 0xFF, LEDGER_APP_MIN_VERSION >> 8 & 0xFF, LEDGER_APP_MIN_VERSION & 0xFF));
+
+              case 13:
+                ;
+
+                _context7.next = 16;
+                return LedgerGuard._setInternalSeed(hwapp, 2);
+
+              case 16:
+                _context7.next = 18;
                 return hwapp.getAddress(0);
 
-              case 11:
+              case 18:
                 keyAddress = _context7.sent;
                 return _context7.abrupt('return', new LedgerGuard(hwapp, keyAddress.substr(0, 32), opts));
 
-              case 13:
+              case 20:
               case 'end':
                 return _context7.stop();
             }
@@ -403,6 +423,34 @@ var LedgerGuard = function (_BaseGuard) {
     value: function _getBipPath(change, index) {
       return BIP44_PATH + '/' + change + '/' + index;
     }
+  }, {
+    key: '_getAppConfig',
+    value: function () {
+      var _ref9 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(hwapp) {
+        return regeneratorRuntime.wrap(function _callee9$(_context9) {
+          while (1) {
+            switch (_context9.prev = _context9.next) {
+              case 0:
+                _context9.next = 2;
+                return hwapp.getAppConfig();
+
+              case 2:
+                return _context9.abrupt('return', _context9.sent);
+
+              case 3:
+              case 'end':
+                return _context9.stop();
+            }
+          }
+        }, _callee9, this);
+      }));
+
+      function _getAppConfig(_x15) {
+        return _ref9.apply(this, arguments);
+      }
+
+      return _getAppConfig;
+    }()
   }]);
 
   return LedgerGuard;
