@@ -348,8 +348,8 @@ var LedgerGuard = function (_BaseGuard) {
                 if (opts.debug) {
                   transport.setDebugMode(true);
                 }
-                // wait 1 min for result
-                transport.setExchangeTimeout(60000);
+                // wait 3s for result
+                transport.setExchangeTimeout(3000);
                 hwapp = new _hwAppIota2.default(transport);
                 _context7.next = 9;
                 return LedgerGuard._getAppConfig(hwapp);
