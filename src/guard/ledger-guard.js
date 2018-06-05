@@ -33,20 +33,7 @@ class LedgerGuard extends BaseGuard {
     transport.setExchangeTimeout(3000);
     const hwapp = new AppIota(transport);
 
-    const appConfig = await LedgerGuard._getAppConfig(hwapp);
-
-    const appVersion = (appConfig.app_version_major << 16) | (appConfig.app_version_minor << 8) | appConfig.app_version_patch
-
-    if (appVersion < LEDGER_APP_MIN_VERSION) {
-      throw new Error(util.format('Your IOTA-Ledger app version is outdated (v%s.%s.%s)! You must update to version v%s.%s.%s before you can login!',
-        appConfig.app_version_major,
-        appConfig.app_version_minor,
-        appConfig.app_version_patch,
-        (LEDGER_APP_MIN_VERSION >> 16) & 0xFF,
-        (LEDGER_APP_MIN_VERSION >> 8) & 0xFF,
-        LEDGER_APP_MIN_VERSION & 0xFF));
-    };
-
+    await LedgerGuard._checkVersion(hwapp);
     await LedgerGuard._setInternalSeed(hwapp, 2);
     const keyAddress = await hwapp.getAddress(0);
 
@@ -86,11 +73,7 @@ class LedgerGuard extends BaseGuard {
     inputs = inputs.filter(input => input.balance > 0);
 
     if (this.opts.debug) {
-      console.log(
-        'prepareTransfers; #output=%i, #input=%i',
-        transfers.length,
-        inputs.length
-      );
+      console.log('getSignedTransactions;', transfers, inputs, remainder);
     }
 
     // the ledger is only needed, if there are proper inputs
@@ -149,6 +132,27 @@ class LedgerGuard extends BaseGuard {
       }
 
       this.activePageIndex = pageIndex;
+    }
+  }
+
+  static async _checkVersion(hwapp) {
+    const appConfig = await LedgerGuard._getAppConfig(hwapp);
+    const appVersion =
+      (appConfig.app_version_major << 16) |
+      (appConfig.app_version_minor << 8) |
+      appConfig.app_version_patch;
+    if (appVersion < LEDGER_APP_MIN_VERSION) {
+      throw new Error(
+        util.format(
+          'Your IOTA-Ledger app version is outdated (v%s.%s.%s)! You must update to version v%s.%s.%s before you can login!',
+          appConfig.app_version_major,
+          appConfig.app_version_minor,
+          appConfig.app_version_patch,
+          (LEDGER_APP_MIN_VERSION >> 16) & 0xff,
+          (LEDGER_APP_MIN_VERSION >> 8) & 0xff,
+          LEDGER_APP_MIN_VERSION & 0xff
+        )
+      );
     }
   }
 

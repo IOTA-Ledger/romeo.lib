@@ -174,7 +174,7 @@ var LedgerGuard = function (_BaseGuard) {
                 });
 
                 if (this.opts.debug) {
-                  console.log('prepareTransfers; #output=%i, #input=%i', transfers.length, inputs.length);
+                  console.log('getSignedTransactions;', transfers, inputs, remainder);
                 }
 
                 // the ledger is only needed, if there are proper inputs
@@ -333,7 +333,7 @@ var LedgerGuard = function (_BaseGuard) {
     key: 'build',
     value: function () {
       var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(options) {
-        var opts, transport, hwapp, appConfig, appVersion, keyAddress;
+        var opts, transport, hwapp, keyAddress;
         return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -352,34 +352,21 @@ var LedgerGuard = function (_BaseGuard) {
                 transport.setExchangeTimeout(3000);
                 hwapp = new _hwAppIota2.default(transport);
                 _context7.next = 9;
-                return LedgerGuard._getAppConfig(hwapp);
+                return LedgerGuard._checkVersion(hwapp);
 
               case 9:
-                appConfig = _context7.sent;
-                appVersion = appConfig.app_version_major << 16 | appConfig.app_version_minor << 8 | appConfig.app_version_patch;
-
-                if (!(appVersion < LEDGER_APP_MIN_VERSION)) {
-                  _context7.next = 13;
-                  break;
-                }
-
-                throw new Error(util.format('Your IOTA-Ledger app version is outdated (v%s.%s.%s)! You must update to version v%s.%s.%s before you can login!', appConfig.app_version_major, appConfig.app_version_minor, appConfig.app_version_patch, LEDGER_APP_MIN_VERSION >> 16 & 0xFF, LEDGER_APP_MIN_VERSION >> 8 & 0xFF, LEDGER_APP_MIN_VERSION & 0xFF));
-
-              case 13:
-                ;
-
-                _context7.next = 16;
+                _context7.next = 11;
                 return LedgerGuard._setInternalSeed(hwapp, 2);
 
-              case 16:
-                _context7.next = 18;
+              case 11:
+                _context7.next = 13;
                 return hwapp.getAddress(0);
 
-              case 18:
+              case 13:
                 keyAddress = _context7.sent;
                 return _context7.abrupt('return', new LedgerGuard(hwapp, keyAddress.substr(0, 32), opts));
 
-              case 20:
+              case 15:
               case 'end':
                 return _context7.stop();
             }
@@ -394,17 +381,29 @@ var LedgerGuard = function (_BaseGuard) {
       return build;
     }()
   }, {
-    key: '_setInternalSeed',
+    key: '_checkVersion',
     value: function () {
-      var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(hwapp, index) {
+      var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(hwapp) {
+        var appConfig, appVersion;
         return regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
               case 0:
                 _context8.next = 2;
-                return hwapp.setActiveSeed(LedgerGuard._getBipPath(1, index), 1);
+                return LedgerGuard._getAppConfig(hwapp);
 
               case 2:
+                appConfig = _context8.sent;
+                appVersion = appConfig.app_version_major << 16 | appConfig.app_version_minor << 8 | appConfig.app_version_patch;
+
+                if (!(appVersion < LEDGER_APP_MIN_VERSION)) {
+                  _context8.next = 6;
+                  break;
+                }
+
+                throw new Error(util.format('Your IOTA-Ledger app version is outdated (v%s.%s.%s)! You must update to version v%s.%s.%s before you can login!', appConfig.app_version_major, appConfig.app_version_minor, appConfig.app_version_patch, LEDGER_APP_MIN_VERSION >> 16 & 0xff, LEDGER_APP_MIN_VERSION >> 8 & 0xff, LEDGER_APP_MIN_VERSION & 0xff));
+
+              case 6:
               case 'end':
                 return _context8.stop();
             }
@@ -412,8 +411,33 @@ var LedgerGuard = function (_BaseGuard) {
         }, _callee8, this);
       }));
 
-      function _setInternalSeed(_x13, _x14) {
+      function _checkVersion(_x13) {
         return _ref8.apply(this, arguments);
+      }
+
+      return _checkVersion;
+    }()
+  }, {
+    key: '_setInternalSeed',
+    value: function () {
+      var _ref9 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(hwapp, index) {
+        return regeneratorRuntime.wrap(function _callee9$(_context9) {
+          while (1) {
+            switch (_context9.prev = _context9.next) {
+              case 0:
+                _context9.next = 2;
+                return hwapp.setActiveSeed(LedgerGuard._getBipPath(1, index), 1);
+
+              case 2:
+              case 'end':
+                return _context9.stop();
+            }
+          }
+        }, _callee9, this);
+      }));
+
+      function _setInternalSeed(_x14, _x15) {
+        return _ref9.apply(this, arguments);
       }
 
       return _setInternalSeed;
@@ -426,27 +450,27 @@ var LedgerGuard = function (_BaseGuard) {
   }, {
     key: '_getAppConfig',
     value: function () {
-      var _ref9 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(hwapp) {
-        return regeneratorRuntime.wrap(function _callee9$(_context9) {
+      var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(hwapp) {
+        return regeneratorRuntime.wrap(function _callee10$(_context10) {
           while (1) {
-            switch (_context9.prev = _context9.next) {
+            switch (_context10.prev = _context10.next) {
               case 0:
-                _context9.next = 2;
+                _context10.next = 2;
                 return hwapp.getAppConfig();
 
               case 2:
-                return _context9.abrupt('return', _context9.sent);
+                return _context10.abrupt('return', _context10.sent);
 
               case 3:
               case 'end':
-                return _context9.stop();
+                return _context10.stop();
             }
           }
-        }, _callee9, this);
+        }, _callee10, this);
       }));
 
-      function _getAppConfig(_x15) {
-        return _ref9.apply(this, arguments);
+      function _getAppConfig(_x16) {
+        return _ref10.apply(this, arguments);
       }
 
       return _getAppConfig;
