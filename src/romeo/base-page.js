@@ -100,7 +100,8 @@ class BasePage extends Base {
                 'Could not attach new addresses'
               );
               await this.syncAddresses(
-                index, false,
+                index,
+                false,
                 Object.keys(this.addresses).length
               );
               callback && (await callback(addresses));
@@ -127,7 +128,6 @@ class BasePage extends Base {
   }
 
   syncAddresses(priority, cachedOnly, total) {
-
     const { iota, queue, index, isCurrent } = this.opts;
 
     return new Promise((resolve, reject) => {

@@ -28,7 +28,8 @@ class Romeo extends Base {
     this.opts = opts;
     this.db = new Database({
       path: opts.dbPath,
-      password: this.guard.getSymmetricKey() });
+      password: this.guard.getSymmetricKey()
+    });
     this.iota = this.guard.setupIOTA({ database: this.db });
     this.queue = createQueue();
     this.pages = new Pages({
@@ -75,13 +76,7 @@ class Romeo extends Base {
   }
 
   asJson() {
-    const {
-      queue: { jobs },
-      pages,
-      isOnline,
-      checkingOnline,
-      ready
-    } = this;
+    const { queue: { jobs }, pages, isOnline, checkingOnline, ready } = this;
     return {
       jobs: Object.values(jobs).map(j => Object.assign({}, j)),
       genericJobs: pages.getJobs().map(j => Object.assign({}, j)),

@@ -40,8 +40,9 @@ class Pages extends BasePage {
 
   applyAddresses(addresses) {
     const { queue, iota, db, guard } = this.opts;
-    const startIndex = Object.keys(this.pages)
-      .filter(e => !addresses.includes(e)).length;
+    const startIndex = Object.keys(this.pages).filter(
+      e => !addresses.includes(e)
+    ).length;
     let currentPage = null;
     const otherPages = [];
 
