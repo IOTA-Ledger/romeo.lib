@@ -172,6 +172,10 @@ var LedgerGuard = function (_BaseGuard) {
                 inputs = inputs.filter(function (input) {
                   return input.balance > 0;
                 });
+                // hw-app-iota requires a tag to be present
+                transfers.forEach(function (t) {
+                  return t.tag = t.tag ? t.tag : "";
+                });
 
                 if (this.opts.debug) {
                   console.log('getSignedTransactions;', transfers, inputs, remainder);
@@ -180,24 +184,24 @@ var LedgerGuard = function (_BaseGuard) {
                 // the ledger is only needed, if there are proper inputs
 
                 if (!(Array.isArray(inputs) && inputs.length)) {
-                  _context4.next = 7;
+                  _context4.next = 8;
                   break;
                 }
 
-                _context4.next = 6;
+                _context4.next = 7;
                 return this.hwapp.signTransaction(transfers, inputs, remainder);
 
-              case 6:
+              case 7:
                 return _context4.abrupt('return', _context4.sent);
 
-              case 7:
+              case 8:
 
                 // no inputs use the regular iota lib with a dummy seed
                 options = {
                   inputs: inputs,
                   address: remainder
                 };
-                _context4.next = 10;
+                _context4.next = 11;
                 return function () {
                   return new Promise(function (resolve, reject) {
                     _this2.iota.api.prepareTransfers(DUMMY_SEED, transfers, options, function (err, result) {
@@ -207,10 +211,10 @@ var LedgerGuard = function (_BaseGuard) {
                   });
                 }();
 
-              case 10:
+              case 11:
                 return _context4.abrupt('return', _context4.sent);
 
-              case 11:
+              case 12:
               case 'end':
                 return _context4.stop();
             }

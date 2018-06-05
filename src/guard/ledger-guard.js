@@ -71,6 +71,8 @@ class LedgerGuard extends BaseGuard {
     // filter unnecessary inputs
     inputs = inputs || [];
     inputs = inputs.filter(input => input.balance > 0);
+    // hw-app-iota requires a tag to be present
+    transfers.forEach(t => (t.tag = t.tag ? t.tag : ""));
 
     if (this.opts.debug) {
       console.log('getSignedTransactions;', transfers, inputs, remainder);
