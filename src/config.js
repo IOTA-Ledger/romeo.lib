@@ -14,7 +14,7 @@ const IOTA_MWM = value('IOTA_MWM', 14);
 
 const PAGE_RESYNC_SECONDS = value('PAGE_RESYNC_SECONDS', 180);
 
-const LEDGER_APP_MIN_VERSION = 0x000101; // 1 Byte Major, 1 Byte Minor, 1 Byte Patch
+const LEDGER_APP_MIN_VERSION = 0x000200; // 1 Byte Major, 1 Byte Minor, 1 Byte Patch
 
 module.exports = {
   IOTA_API_ENDPOINT,
