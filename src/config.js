@@ -10,7 +10,7 @@ const IOTA_API_ENDPOINT = value(
 
 const IOTA_DEPTH = value('IOTA_DEPTH', 4);
 
-const IOTA_MWM = value('IOTA_MWM', 14);
+const IOTA_MWM = value('IOTA_MWM', 9);
 
 const PAGE_RESYNC_SECONDS = value('PAGE_RESYNC_SECONDS', 180);
 

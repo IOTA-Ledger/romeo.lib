@@ -10,7 +10,7 @@ var IOTA_API_ENDPOINT = value('IOTA_API_ENDPOINT', 'https://nodes.testnet.iota.o
 
 var IOTA_DEPTH = value('IOTA_DEPTH', 4);
 
-var IOTA_MWM = value('IOTA_MWM', 14);
+var IOTA_MWM = value('IOTA_MWM', 9);
 
 var PAGE_RESYNC_SECONDS = value('PAGE_RESYNC_SECONDS', 180);
 
