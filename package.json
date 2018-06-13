@@ -34,7 +34,7 @@
     "watch": "npm-watch"
   },
   "dependencies": {
-    "@ledgerhq/hw-transport-u2f": "^4.7.3",
+    "@ledgerhq/hw-transport-u2f": "^4.13.0",
     "async": "^2.6.0",
     "better-queue": "^3.8.6",
     "better-queue-memory": "^1.0.2",

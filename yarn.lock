@@ -2,16 +2,16 @@
 # yarn lockfile v1
 
 
-"@ledgerhq/hw-transport-u2f@^4.7.3":
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-u2f/-/hw-transport-u2f-4.12.0.tgz#151c7ccaf14627bd26b95a9f4863e4eb76d09865"
+"@ledgerhq/hw-transport-u2f@^4.13.0":
+  version "4.13.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-u2f/-/hw-transport-u2f-4.13.0.tgz#8a9e9bbb58f32b1b4fcc8ac6a83ea44e2e4ac94a"
   dependencies:
-    "@ledgerhq/hw-transport" "^4.12.0"
+    "@ledgerhq/hw-transport" "^4.13.0"
     u2f-api "0.2.7"
 
-"@ledgerhq/hw-transport@^4.12.0":
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-4.12.0.tgz#1cbfb2462728e46297d8ed215b60ac7e3089ba92"
+"@ledgerhq/hw-transport@^4.13.0":
+  version "4.13.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-4.13.0.tgz#463043200c96c91379318052ad4dbe8c80d95cf5"
   dependencies:
     events "^2.0.0"
 
@@ -193,11 +193,17 @@ async-limiter@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.0.tgz#78faed8c3d074ab81f22b4e985d79e8738f720f8"
 
-async@^2.5.0, async@^2.6.0:
+async@^2.5.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/async/-/async-2.6.0.tgz#61a29abb6fcc026fea77e56d1c6ec53a795951f4"
   dependencies:
     lodash "^4.14.0"
+
+async@^2.6.0:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/async/-/async-2.6.1.tgz#b245a23ca71930044ec53fa46aa00a3e87c6a610"
+  dependencies:
+    lodash "^4.17.10"
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -2564,7 +2570,7 @@ https-browserify@^1.0.0:
 
 "hw-app-iota@git+https://github.com/IOTA-Ledger/hw-app-iota.js.git":
   version "0.1.1"
-  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#d5fdf264d7ff0fd002b5a6e021dbdc6618960f67"
+  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#216c6920e7b5457193ec0f29cb45cfc21cc04a52"
   dependencies:
     bip32-path "^0.4.2"
     iota.lib.js "^0.4.7"
@@ -3237,6 +3243,10 @@ lodash.uniq@^4.5.0:
 lodash@^4.14.0, lodash@^4.17.4:
   version "4.17.5"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
+
+lodash@^4.17.10:
+  version "4.17.10"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
 loose-envify@^1.0.0:
   version "1.3.1"
