@@ -1,7 +1,7 @@
-# CarrIOTA Romeo Library
+# Deviota Romeo Library
 
-CarrIOTA Romeo is a lightweight ledger built on top of the IOTA Tangle,
-using the CarrIOTA Field capabilities.
+Deviota Romeo is a lightweight ledger built on top of the IOTA Tangle,
+using the Deviota Field capabilities.
 
 This is, yet undocumented, backend library. Check the **romeo.html** project
 for the end-user application and an example of usage.
@@ -25,7 +25,7 @@ This software is experimental. Use at your own risk!
 **Donations always welcome**:
 
 ```
-YHZIJOENEFSDMZGZA9WOGFTRXOFPVFFCDEYEFHPUGKEUAOTTMVLPSSNZNHRJD99WAVESLFPSGLMTUEIBDZRKBKXWZD
+AAJXXFJUEQHKPYIOUIUO9FWCMOAFBZAZPXIFRI9FLDQZJGHQENG9HNMODUZJCHR9RHHUSBHWJELGRDOWZRNWYLYCQW
 ```
 
 ## Authors
