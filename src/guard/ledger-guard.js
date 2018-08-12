@@ -1,8 +1,8 @@
 import Transport from '@ledgerhq/hw-transport-u2f';
 import AppIota from 'hw-app-iota';
 const { BaseGuard } = require('./base');
-const { LEDGER_APP_MIN_VERSION } = require('../config');
-const util = require('util');
+const { LEDGER_APP_VERSION_RANGE } = require('../config');
+const semver = require('semver');
 
 // use testnet path for now
 const BIP44_PATH = "44'/1'/0'";
@@ -72,7 +72,7 @@ class LedgerGuard extends BaseGuard {
     inputs = inputs || [];
     inputs = inputs.filter(input => input.balance > 0);
     // hw-app-iota requires a tag to be present
-    transfers.forEach(t => (t.tag = t.tag ? t.tag : ""));
+    transfers.forEach(t => (t.tag = t.tag ? t.tag : ''));
 
     if (this.opts.debug) {
       console.log('getSignedTransactions;', transfers, inputs, remainder);
@@ -138,23 +138,15 @@ class LedgerGuard extends BaseGuard {
   }
 
   static async _checkVersion(hwapp) {
-    const appConfig = await LedgerGuard._getAppConfig(hwapp);
-    const appVersion =
-      (appConfig.app_version_major << 16) |
-      (appConfig.app_version_minor << 8) |
-      appConfig.app_version_patch;
-    if (appVersion < LEDGER_APP_MIN_VERSION) {
-      throw new Error(
-        util.format(
-          'Your IOTA-Ledger app version is outdated (v%s.%s.%s)! You must update to version v%s.%s.%s before you can login!',
-          appConfig.app_version_major,
-          appConfig.app_version_minor,
-          appConfig.app_version_patch,
-          (LEDGER_APP_MIN_VERSION >> 16) & 0xff,
-          (LEDGER_APP_MIN_VERSION >> 8) & 0xff,
-          LEDGER_APP_MIN_VERSION & 0xff
-        )
-      );
+    const appVersion = semver.clean(await hwapp.getAppVersion());
+    if (!semver.satisfies(appVersion, LEDGER_APP_VERSION_RANGE)) {
+      const message =
+        'Your IOTA-Ledger app version ' +
+        appVersion +
+        ' is outdated! You must update to a version satisfying "' +
+        LEDGER_APP_VERSION_RANGE +
+        '"  before you can login!';
+      throw new Error(message);
     }
   }
 
@@ -164,10 +156,6 @@ class LedgerGuard extends BaseGuard {
 
   static _getBipPath(change, index) {
     return BIP44_PATH + '/' + change + '/' + index;
-  }
-
-  static async _getAppConfig(hwapp) {
-    return await hwapp.getAppConfig();
   }
 }
 

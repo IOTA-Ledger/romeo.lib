@@ -24,9 +24,9 @@ var _require = require('./base'),
     BaseGuard = _require.BaseGuard;
 
 var _require2 = require('../config'),
-    LEDGER_APP_MIN_VERSION = _require2.LEDGER_APP_MIN_VERSION;
+    LEDGER_APP_VERSION_RANGE = _require2.LEDGER_APP_VERSION_RANGE;
 
-var util = require('util');
+var semver = require('semver');
 
 // use testnet path for now
 var BIP44_PATH = "44'/1'/0'";
@@ -174,7 +174,7 @@ var LedgerGuard = function (_BaseGuard) {
                 });
                 // hw-app-iota requires a tag to be present
                 transfers.forEach(function (t) {
-                  return t.tag = t.tag ? t.tag : "";
+                  return t.tag = t.tag ? t.tag : '';
                 });
 
                 if (this.opts.debug) {
@@ -388,26 +388,28 @@ var LedgerGuard = function (_BaseGuard) {
     key: '_checkVersion',
     value: function () {
       var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(hwapp) {
-        var appConfig, appVersion;
+        var appVersion, message;
         return regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
               case 0:
-                _context8.next = 2;
-                return LedgerGuard._getAppConfig(hwapp);
+                _context8.t0 = semver;
+                _context8.next = 3;
+                return hwapp.getAppVersion();
 
-              case 2:
-                appConfig = _context8.sent;
-                appVersion = appConfig.app_version_major << 16 | appConfig.app_version_minor << 8 | appConfig.app_version_patch;
+              case 3:
+                _context8.t1 = _context8.sent;
+                appVersion = _context8.t0.clean.call(_context8.t0, _context8.t1);
 
-                if (!(appVersion < LEDGER_APP_MIN_VERSION)) {
-                  _context8.next = 6;
+                if (semver.satisfies(appVersion, LEDGER_APP_VERSION_RANGE)) {
+                  _context8.next = 8;
                   break;
                 }
 
-                throw new Error(util.format('Your IOTA-Ledger app version is outdated (v%s.%s.%s)! You must update to version v%s.%s.%s before you can login!', appConfig.app_version_major, appConfig.app_version_minor, appConfig.app_version_patch, LEDGER_APP_MIN_VERSION >> 16 & 0xff, LEDGER_APP_MIN_VERSION >> 8 & 0xff, LEDGER_APP_MIN_VERSION & 0xff));
+                message = 'Your IOTA-Ledger app version ' + appVersion + ' is outdated! You must update to a version satisfying "' + LEDGER_APP_VERSION_RANGE + '"  before you can login!';
+                throw new Error(message);
 
-              case 6:
+              case 8:
               case 'end':
                 return _context8.stop();
             }
@@ -451,34 +453,6 @@ var LedgerGuard = function (_BaseGuard) {
     value: function _getBipPath(change, index) {
       return BIP44_PATH + '/' + change + '/' + index;
     }
-  }, {
-    key: '_getAppConfig',
-    value: function () {
-      var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(hwapp) {
-        return regeneratorRuntime.wrap(function _callee10$(_context10) {
-          while (1) {
-            switch (_context10.prev = _context10.next) {
-              case 0:
-                _context10.next = 2;
-                return hwapp.getAppConfig();
-
-              case 2:
-                return _context10.abrupt('return', _context10.sent);
-
-              case 3:
-              case 'end':
-                return _context10.stop();
-            }
-          }
-        }, _callee10, this);
-      }));
-
-      function _getAppConfig(_x16) {
-        return _ref10.apply(this, arguments);
-      }
-
-      return _getAppConfig;
-    }()
   }]);
 
   return LedgerGuard;
