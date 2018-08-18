@@ -93,7 +93,7 @@ class BasePage extends Base {
                 reject(err);
               }
               addresses = Array.isArray(addresses) ? addresses : [addresses];
-              this.applyAddresses(addresses);
+              await this.applyAddresses(addresses);
               await this.restoreAddresses(
                 addresses,
                 `Attaching new addresses`,
