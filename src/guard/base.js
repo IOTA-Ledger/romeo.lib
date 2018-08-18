@@ -176,7 +176,7 @@ class BaseGuard {
     const promiseFactory = () =>
       new Promise(async (resolve, reject) => {
         try {
-          this._setActivePage(pageIndex);
+          await this._setActivePage(pageIndex);
           resolve(
             await this._getSignedTransactions(transfers, inputs, remainder)
           );
