@@ -332,30 +332,32 @@ var BaseGuard = function () {
                           switch (_context5.prev = _context5.next) {
                             case 0:
                               _context5.prev = 0;
+                              _context5.next = 3;
+                              return _this4._setActivePage(pageIndex);
 
-                              _this4._setActivePage(pageIndex);
+                            case 3:
                               _context5.t0 = resolve;
-                              _context5.next = 5;
+                              _context5.next = 6;
                               return _this4._getSignedTransactions(transfers, inputs, remainder);
 
-                            case 5:
+                            case 6:
                               _context5.t1 = _context5.sent;
                               (0, _context5.t0)(_context5.t1);
-                              _context5.next = 12;
+                              _context5.next = 13;
                               break;
 
-                            case 9:
-                              _context5.prev = 9;
+                            case 10:
+                              _context5.prev = 10;
                               _context5.t2 = _context5['catch'](0);
 
                               reject(_context5.t2);
 
-                            case 12:
+                            case 13:
                             case 'end':
                               return _context5.stop();
                           }
                         }
-                      }, _callee5, _this4, [[0, 9]]);
+                      }, _callee5, _this4, [[0, 10]]);
                     }));
 
                     return function (_x17, _x18) {
