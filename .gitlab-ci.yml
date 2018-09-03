@@ -31,8 +31,8 @@ publish:npm:
     - branches
   script:
     # build the package
-    - yarn run make
+    - npm run make
 
     # publish on npm
     - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}'>.npmrc
-    - yarn publish --access=public
+    - npm publish --access=public
