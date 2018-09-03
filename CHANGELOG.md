@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.1.2] - 2018-09-03
+
+### Changed
+
+* Rebranding
+
 ## [0.1.1] - 2018-06-12
 
 ### Changed
 
--   Change repo URL
--   New project/package signature
+* Change repo URL
+* New project/package signature
