@@ -1,6 +1,6 @@
 {
   "name": "@semkodev/romeo.lib",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Romeo protocol library for IOTA",
   "main": "dist/index.js",
   "homepage": "https://semkodev.com",
