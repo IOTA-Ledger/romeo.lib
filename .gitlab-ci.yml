@@ -1,0 +1,37 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - test
+  - publish
+
+cache:
+  paths:
+    - node_modules/
+
+before_script:
+  - apk update
+  - apk add yarn python g++ make
+  - yarn install
+
+test:
+  stage: test
+  when: manual # TODO: FIX THE TESTS!!
+  script:
+    - yarn run test
+
+publish:npm:
+  stage: publish
+  only:
+    - /v\d*\.\d*\.\d*/
+  except:
+    - branches
+  script:
+    # build the package
+    - yarn run make
+
+    # publish on npm
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}'>.npmrc
+    - yarn publish --access=public
