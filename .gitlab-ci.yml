@@ -13,7 +13,7 @@ cache:
 
 before_script:
   - apk update
-  - apk add yarn python g++ make
+  - apk add npm yarn python g++ make
   - yarn global add node-gyp
   - yarn install
 
