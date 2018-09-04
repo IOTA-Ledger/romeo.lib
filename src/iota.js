@@ -393,7 +393,7 @@ function _sendTransfer(
                   guard,
                   seedOrPageIndex,
                   0,
-                  1,
+                  null,
                   (error, address, addressIndex) => {
                     if (error) throw error;
                     index = addressIndex;

@@ -420,7 +420,7 @@ function _sendTransfer(api, guard, seedOrPageIndex, depth, minWeightMagnitude, t
             _context2.next = 11;
             return function () {
               return new Promise(function (resolve) {
-                _getNewAddress(api, guard, seedOrPageIndex, 0, 1, function (error, address, addressIndex) {
+                _getNewAddress(api, guard, seedOrPageIndex, 0, null, function (error, address, addressIndex) {
                   if (error) throw error;
                   index = addressIndex;
                   resolve(address);
