@@ -187,7 +187,9 @@ var BaseGuard = function () {
                 };
 
                 return _context2.abrupt('return', new Promise(function (resolve, reject) {
-                  var job = _this2.queue.addJob(promiseFactory, priority, { type: 'GET_PAGES' });
+                  var job = _this2.queue.addJob(promiseFactory, priority, {
+                    type: 'GET_PAGES'
+                  });
                   job.on('finish', resolve);
                   job.on('failed', reject);
                 }));
@@ -259,7 +261,10 @@ var BaseGuard = function () {
                 };
 
                 return _context4.abrupt('return', new Promise(function (resolve, reject) {
-                  var job = _this3.queue.addJob(promiseFactory, priority, { page: pageIndex, type: 'GET_ADDRESSES' });
+                  var job = _this3.queue.addJob(promiseFactory, priority, {
+                    page: pageIndex,
+                    type: 'GET_ADDRESSES'
+                  });
                   job.on('finish', resolve);
                   job.on('failed', reject);
                 }));
@@ -332,7 +337,10 @@ var BaseGuard = function () {
                 };
 
                 return _context6.abrupt('return', new Promise(function (resolve, reject) {
-                  var job = _this4.queue.addJob(promiseFactory, priority, { page: pageIndex, type: 'GET_SIGNED_TRANSACTIONS' });
+                  var job = _this4.queue.addJob(promiseFactory, priority, {
+                    page: pageIndex,
+                    type: 'GET_SIGNED_TRANSACTIONS'
+                  });
                   job.on('finish', resolve);
                   job.on('failed', reject);
                 }));

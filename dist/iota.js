@@ -309,6 +309,11 @@ function _getNewAddress(api, guard, seedOrPageIndex, index, total, callback) {
               return _context.abrupt('return', (0, _context.t0)(null, _context.t1));
 
             case 9:
+              //  Case 2: no total provided
+              //
+              //  Continue calling wasAddressSpenFrom & findTransactions to see if address was already created
+              //  if null, return list of addresses
+              //
               async.doWhilst(function (callback) {
                 // Iteratee function
                 getter(index, 1).then(function (addresses) {
@@ -331,7 +336,7 @@ function _getNewAddress(api, guard, seedOrPageIndex, index, total, callback) {
                       callback(null, newAddress, true, index - 1);
                     } else {
                       // Check for txs if address isn't spent
-                      api.findTransactions({ 'addresses': [newAddress] }, function (err, transactions) {
+                      api.findTransactions({ addresses: [newAddress] }, function (err, transactions) {
                         if (err) {
                           return callback(err);
                         }

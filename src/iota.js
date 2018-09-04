@@ -221,14 +221,30 @@ function createAPI({ path, password, provider, database, guard }) {
     getTransactions(address, process(), process(true), cachedOnly);
   }
 
-  function getNewAddress (pageIndex, index, total, callback) {
+  function getNewAddress(pageIndex, index, total, callback) {
     if (!guard) throw new Error('guard has not been set up!');
     _getNewAddress(iota.api, guard, pageIndex, index, total, callback, false);
   }
 
-  function sendTransfer (pageIndex, depth, minWeightMagnitude, transfers, options, callback) {
+  function sendTransfer(
+    pageIndex,
+    depth,
+    minWeightMagnitude,
+    transfers,
+    options,
+    callback
+  ) {
     if (!guard) throw new Error('guard has not been set up!');
-    _sendTransfer(iota.api, guard, pageIndex, depth, minWeightMagnitude, transfers, options, callback);
+    _sendTransfer(
+      iota.api,
+      guard,
+      pageIndex,
+      depth,
+      minWeightMagnitude,
+      transfers,
+      options,
+      callback
+    );
   }
 
   iota.api.ext = {
@@ -245,13 +261,22 @@ function createAPI({ path, password, provider, database, guard }) {
   return iota;
 }
 
-function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, returnAll = true) {
+function _getNewAddress(
+  api,
+  guard,
+  seedOrPageIndex,
+  index,
+  total,
+  callback,
+  returnAll = true
+) {
   if (!guard) {
     api.getNewAddress(seedOrPageIndex, { returnAll, total }, callback);
   } else {
-    const getter = seedOrPageIndex < 0
-      ? guard.getPages.bind(guard)
-      : (i, t) => guard.getAddresses(seedOrPageIndex, i, t);
+    const getter =
+      seedOrPageIndex < 0
+        ? guard.getPages.bind(guard)
+        : (i, t) => guard.getAddresses(seedOrPageIndex, i, t);
     (async () => {
       const allAddresses = [];
 
@@ -261,61 +286,88 @@ function _getNewAddress (api, guard, seedOrPageIndex, index, total, callback, re
       // and return the list of all addresses
       if (total) {
         return callback(null, await getter(index, total));
-      }
-      //  Case 2: no total provided
-      //
-      //  Continue calling wasAddressSpenFrom & findTransactions to see if address was already created
-      //  if null, return list of addresses
-      //
-      else {
-        async.doWhilst(function(callback) {
-          // Iteratee function
-          getter(index, 1).then(addresses => {
-            const newAddress = addresses[0];
+      } else {
+        //  Case 2: no total provided
+        //
+        //  Continue calling wasAddressSpenFrom & findTransactions to see if address was already created
+        //  if null, return list of addresses
+        //
+        async.doWhilst(
+          function(callback) {
+            // Iteratee function
+            getter(index, 1).then(addresses => {
+              const newAddress = addresses[0];
 
-            if (returnAll) {
-              allAddresses.push(newAddress)
+              if (returnAll) {
+                allAddresses.push(newAddress);
+              }
+
+              // Increase the index
+              index += 1;
+
+              api.wereAddressesSpentFrom(newAddress, function(err, res) {
+                if (err) {
+                  return callback(err);
+                }
+
+                // Validity check
+                if (res[0]) {
+                  callback(null, newAddress, true, index - 1);
+                } else {
+                  // Check for txs if address isn't spent
+                  api.findTransactions({ addresses: [newAddress] }, function(
+                    err,
+                    transactions
+                  ) {
+                    if (err) {
+                      return callback(err);
+                    }
+                    callback(
+                      err,
+                      newAddress,
+                      transactions.length > 0,
+                      index - 1
+                    );
+                  });
+                }
+              });
+            });
+          },
+          function(address, isUsed) {
+            return isUsed;
+          },
+          function(err, address, isUsed, index) {
+            if (err) {
+              return callback(err);
+            } else {
+              return callback(null, returnAll ? allAddresses : address, index);
             }
-
-            // Increase the index
-            index += 1;
-
-            api.wereAddressesSpentFrom(newAddress, function (err, res) {
-              if (err) {
-                return callback(err)
-              }
-
-              // Validity check
-              if (res[0]) {
-                callback(null, newAddress, true, index - 1)
-              } else { // Check for txs if address isn't spent
-                api.findTransactions({'addresses': [newAddress]}, function (err, transactions) {
-                  if (err) {
-                    return callback(err)
-                  }
-                  callback(err, newAddress, transactions.length > 0, index - 1)
-                })
-              }
-            })
-          });
-
-        }, function (address, isUsed) {
-          return isUsed
-        }, function(err, address, isUsed, index) {
-          if (err) {
-            return callback(err);
-          } else {
-            return callback(null, returnAll ? allAddresses : address, index);
           }
-        })
+        );
       }
     })();
   }
 }
 
-function _sendTransfer (api, guard, seedOrPageIndex, depth, minWeightMagnitude, transfers, options, callback) {
+function _sendTransfer(
+  api,
+  guard,
+  seedOrPageIndex,
+  depth,
+  minWeightMagnitude,
+  transfers,
+  options,
+  callback
+) {
   if (!guard) {
-    return api.sendTransfer(seedOrPageIndex, depth, minWeightMagnitude, transfers, options, callback);
+    return api.sendTransfer(
+      seedOrPageIndex,
+      depth,
+      minWeightMagnitude,
+      transfers,
+      options,
+      callback
+    );
   }
 
   (async () => {
@@ -325,26 +377,36 @@ function _sendTransfer (api, guard, seedOrPageIndex, depth, minWeightMagnitude, 
       const totalValue = transfers.reduce((t, i) => t + i.value, 0);
       if (totalValue > 0 && !options.inputs)
         return callback(new Error('No inputs for guard send provided!'));
-      const remainder = totalValue > 0
-        ? (options.address ||
-          await (() => new Promise(resolve => {
-            _getNewAddress(
-              api, guard, seedOrPageIndex, 0, 1,
-              (error, address, addressIndex) => {
-                if (error) throw error;
-                index = addressIndex
-                resolve(address);
-              },
-              false);
-          }))())
-        : null;
+      const remainder =
+        totalValue > 0
+          ? options.address ||
+            (await (() =>
+              new Promise(resolve => {
+                _getNewAddress(
+                  api,
+                  guard,
+                  seedOrPageIndex,
+                  0,
+                  1,
+                  (error, address, addressIndex) => {
+                    if (error) throw error;
+                    index = addressIndex;
+                    resolve(address);
+                  },
+                  false
+                );
+              }))())
+          : null;
 
       const trytes = await guard.getSignedTransactions(
-        seedOrPageIndex, transfers, inputs, { address: remainder, keyIndex: index });
+        seedOrPageIndex,
+        transfers,
+        inputs,
+        { address: remainder, keyIndex: index }
+      );
 
       api.sendTrytes(trytes, depth, minWeightMagnitude, options, callback);
-    }
-    catch (err) {
+    } catch (err) {
       callback(err);
     }
   })();

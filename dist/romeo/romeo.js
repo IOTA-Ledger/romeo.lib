@@ -49,7 +49,8 @@ var Romeo = function (_Base) {
     _this.opts = opts;
     _this.db = new Database({
       path: opts.dbPath,
-      password: _this.guard.getSymmetricKey() });
+      password: _this.guard.getSymmetricKey()
+    });
     _this.iota = _this.guard.setupIOTA({ database: _this.db });
     _this.queue = createQueue();
     _this.pages = new Pages({
