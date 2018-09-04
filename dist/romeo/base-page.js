@@ -195,29 +195,32 @@ var BasePage = function (_Base) {
                           reject(err);
                         }
                         addresses = Array.isArray(addresses) ? addresses : [addresses];
-                        _this4.applyAddresses(addresses);
-                        _context3.next = 5;
+                        _context3.next = 4;
+                        return _this4.applyAddresses(addresses);
+
+                      case 4:
+                        _context3.next = 6;
                         return _this4.restoreAddresses(addresses, 'Attaching new addresses', 'Could not attach new addresses');
 
-                      case 5:
-                        _context3.next = 7;
+                      case 6:
+                        _context3.next = 8;
                         return _this4.syncAddresses(index, false, Object.keys(_this4.addresses).length);
 
-                      case 7:
+                      case 8:
                         _context3.t0 = callback;
 
                         if (!_context3.t0) {
-                          _context3.next = 11;
+                          _context3.next = 12;
                           break;
                         }
 
-                        _context3.next = 11;
+                        _context3.next = 12;
                         return callback(addresses);
 
-                      case 11:
+                      case 12:
                         resolve(addresses);
 
-                      case 12:
+                      case 13:
                       case 'end':
                         return _context3.stop();
                     }

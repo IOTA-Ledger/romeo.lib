@@ -38,7 +38,7 @@ class Pages extends BasePage {
     );
   }
 
-  applyAddresses(addresses) {
+  async applyAddresses(addresses) {
     const { queue, iota, db, guard } = this.opts;
     const startIndex = Object.keys(this.pages).filter(
       e => !addresses.includes(e)
@@ -82,9 +82,8 @@ class Pages extends BasePage {
       .sort((a, b) => b.keyIndex - a.keyIndex)[0]
       .page.setCurrent(true);
     if (currentPage) {
-      currentPage
-        .init(true, 6000)
-        .then(() => Promise.all(otherPages.map(p => p.init())));
+      await currentPage.init(true, 6000);
+      Promise.all(otherPages.map(p => p.init()));
     }
     this.onChange();
   }

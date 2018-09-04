@@ -63,66 +63,91 @@ var Pages = function (_BasePage) {
     }
   }, {
     key: 'applyAddresses',
-    value: function applyAddresses(addresses) {
-      var _this2 = this;
+    value: function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(addresses) {
+        var _this2 = this;
 
-      var _opts = this.opts,
-          queue = _opts.queue,
-          iota = _opts.iota,
-          db = _opts.db,
-          guard = _opts.guard;
+        var _opts, queue, iota, db, guard, startIndex, currentPage, otherPages;
 
-      var startIndex = Object.keys(this.pages).filter(function (e) {
-        return !addresses.includes(e);
-      }).length;
-      var currentPage = null;
-      var otherPages = [];
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _opts = this.opts, queue = _opts.queue, iota = _opts.iota, db = _opts.db, guard = _opts.guard;
+                startIndex = Object.keys(this.pages).filter(function (e) {
+                  return !addresses.includes(e);
+                }).length;
+                currentPage = null;
+                otherPages = [];
 
-      addresses && addresses.length && Object.values(this.pages).forEach(function (page) {
-        return page.page.setCurrent(false);
-      });
 
-      addresses.forEach(function (address, keyIndex) {
-        if (!_this2.pages[address]) {
-          var onChange = _this2.onChange;
+                addresses && addresses.length && Object.values(this.pages).forEach(function (page) {
+                  return page.page.setCurrent(false);
+                });
 
-          var index = keyIndex + startIndex;
-          var isCurrent = keyIndex === addresses.length - 1;
-          var page = new Page({
-            db: db,
-            queue: queue,
-            iota: iota,
-            index: index,
-            guard: guard,
-            isCurrent: isCurrent,
-            onChange: onChange
-          });
+                addresses.forEach(function (address, keyIndex) {
+                  if (!_this2.pages[address]) {
+                    var onChange = _this2.onChange;
 
-          _this2.pages[address] = {
-            address: address,
-            seed: guard.getPageSeed(index),
-            keyIndex: index,
-            page: page
-          };
-          if (isCurrent) {
-            currentPage = page;
-          } else {
-            otherPages.push(page);
+                    var index = keyIndex + startIndex;
+                    var isCurrent = keyIndex === addresses.length - 1;
+                    var page = new Page({
+                      db: db,
+                      queue: queue,
+                      iota: iota,
+                      index: index,
+                      guard: guard,
+                      isCurrent: isCurrent,
+                      onChange: onChange
+                    });
+
+                    _this2.pages[address] = {
+                      address: address,
+                      seed: guard.getPageSeed(index),
+                      keyIndex: index,
+                      page: page
+                    };
+                    if (isCurrent) {
+                      currentPage = page;
+                    } else {
+                      otherPages.push(page);
+                    }
+                  }
+                });
+                Object.values(this.pages).sort(function (a, b) {
+                  return b.keyIndex - a.keyIndex;
+                })[0].page.setCurrent(true);
+
+                if (!currentPage) {
+                  _context.next = 11;
+                  break;
+                }
+
+                _context.next = 10;
+                return currentPage.init(true, 6000);
+
+              case 10:
+                Promise.all(otherPages.map(function (p) {
+                  return p.init();
+                }));
+
+              case 11:
+                this.onChange();
+
+              case 12:
+              case 'end':
+                return _context.stop();
+            }
           }
-        }
-      });
-      Object.values(this.pages).sort(function (a, b) {
-        return b.keyIndex - a.keyIndex;
-      })[0].page.setCurrent(true);
-      if (currentPage) {
-        currentPage.init(true, 6000).then(function () {
-          return Promise.all(otherPages.map(function (p) {
-            return p.init();
-          }));
-        });
+        }, _callee, this);
+      }));
+
+      function applyAddresses(_x) {
+        return _ref.apply(this, arguments);
       }
-      this.onChange();
-    }
+
+      return applyAddresses;
+    }()
   }, {
     key: 'getCurrent',
     value: function getCurrent() {
@@ -148,65 +173,20 @@ var Pages = function (_BasePage) {
   }, {
     key: 'syncPage',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(page) {
+      var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(page) {
         var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 30;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                _context.next = 2;
-                return page.sync(force, priority);
-
-              case 2:
-                return _context.abrupt('return', _context.sent);
-
-              case 3:
-              case 'end':
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function syncPage(_x3) {
-        return _ref.apply(this, arguments);
-      }
-
-      return syncPage;
-    }()
-  }, {
-    key: 'syncCurrentPage',
-    value: function () {
-      var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-        var priority = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30;
-        var currentPage;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                currentPage = this.getCurrent();
+                _context2.next = 2;
+                return page.sync(force, priority);
 
-                if (!(currentPage && !currentPage.isSynced())) {
-                  _context2.next = 7;
-                  break;
-                }
+              case 2:
+                return _context2.abrupt('return', _context2.sent);
 
-                _context2.next = 4;
-                return this.syncPage(currentPage, true, priority);
-
-              case 4:
-                _context2.t0 = _context2.sent;
-                _context2.next = 8;
-                break;
-
-              case 7:
-                _context2.t0 = null;
-
-              case 8:
-                return _context2.abrupt('return', _context2.t0);
-
-              case 9:
+              case 3:
               case 'end':
                 return _context2.stop();
             }
@@ -214,8 +194,53 @@ var Pages = function (_BasePage) {
         }, _callee2, this);
       }));
 
-      function syncCurrentPage() {
+      function syncPage(_x4) {
         return _ref2.apply(this, arguments);
+      }
+
+      return syncPage;
+    }()
+  }, {
+    key: 'syncCurrentPage',
+    value: function () {
+      var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+        var priority = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30;
+        var currentPage;
+        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                currentPage = this.getCurrent();
+
+                if (!(currentPage && !currentPage.isSynced())) {
+                  _context3.next = 7;
+                  break;
+                }
+
+                _context3.next = 4;
+                return this.syncPage(currentPage, true, priority);
+
+              case 4:
+                _context3.t0 = _context3.sent;
+                _context3.next = 8;
+                break;
+
+              case 7:
+                _context3.t0 = null;
+
+              case 8:
+                return _context3.abrupt('return', _context3.t0);
+
+              case 9:
+              case 'end':
+                return _context3.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function syncCurrentPage() {
+        return _ref3.apply(this, arguments);
       }
 
       return syncCurrentPage;
