@@ -52,7 +52,8 @@ function createQueue(options) {
     priority: function priority(job, cb) {
       return cb(null, job.priority || 1);
     },
-    maxRetries: 5,
+    // disable retrying for now, to get potential ledger errors at once
+    // maxRetries: 5,
     retryDelay: 1000,
     cancelIfRunning: true,
     precondition: function precondition(cb) {
