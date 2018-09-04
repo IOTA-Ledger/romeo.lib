@@ -14,7 +14,7 @@ const IOTA_MWM = value('IOTA_MWM', 9);
 
 const PAGE_RESYNC_SECONDS = value('PAGE_RESYNC_SECONDS', 180);
 
-const LEDGER_APP_VERSION_RANGE = '^0.3.0';
+const LEDGER_APP_VERSION_RANGE = '^0.4.0';
 
 module.exports = {
   IOTA_API_ENDPOINT,
