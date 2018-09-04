@@ -296,19 +296,29 @@ function _getNewAddress(api, guard, seedOrPageIndex, index, total, callback) {
               // and return the list of all addresses
 
               if (!total) {
-                _context.next = 9;
+                _context.next = 15;
                 break;
               }
 
+              _context.prev = 2;
               _context.t0 = callback;
-              _context.next = 5;
+              _context.next = 6;
               return getter(index, total);
 
-            case 5:
+            case 6:
               _context.t1 = _context.sent;
               return _context.abrupt('return', (0, _context.t0)(null, _context.t1));
 
-            case 9:
+            case 10:
+              _context.prev = 10;
+              _context.t2 = _context['catch'](2);
+              return _context.abrupt('return', callback(_context.t2));
+
+            case 13:
+              _context.next = 16;
+              break;
+
+            case 15:
               //  Case 2: no total provided
               //
               //  Continue calling wasAddressSpenFrom & findTransactions to see if address was already created
@@ -344,6 +354,8 @@ function _getNewAddress(api, guard, seedOrPageIndex, index, total, callback) {
                       });
                     }
                   });
+                }).catch(function (err) {
+                  return callback(err);
                 });
               }, function (address, isUsed) {
                 return isUsed;
@@ -355,12 +367,12 @@ function _getNewAddress(api, guard, seedOrPageIndex, index, total, callback) {
                 }
               });
 
-            case 10:
+            case 16:
             case 'end':
               return _context.stop();
           }
         }
-      }, _callee, _this);
+      }, _callee, _this, [[2, 10]]);
     }))();
   }
 }

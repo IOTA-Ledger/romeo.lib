@@ -111,8 +111,12 @@ class BaseGuard {
    */
   async getPages(index, total, priority = 1) {
     const promiseFactory = () =>
-      new Promise(async resolve => {
-        resolve(await this._getPages(index, total));
+      new Promise(async (resolve, reject) => {
+        try {
+          resolve(await this._getPages(index, total));
+        } catch (err) {
+          reject(err);
+        }
       });
 
     return new Promise((resolve, reject) => {
@@ -134,9 +138,13 @@ class BaseGuard {
    */
   async getAddresses(pageIndex, index, total, priority = 1) {
     const promiseFactory = () =>
-      new Promise(async resolve => {
-        this._setActivePage(pageIndex);
-        resolve(await this._getAddresses(index, total));
+      new Promise(async (resolve, reject) => {
+        try {
+          await this._setActivePage(pageIndex);
+          resolve(await this._getAddresses(index, total));
+        } catch (err) {
+          reject(err);
+        }
       });
 
     return new Promise((resolve, reject) => {
@@ -166,11 +174,15 @@ class BaseGuard {
     priority = 1
   ) {
     const promiseFactory = () =>
-      new Promise(async resolve => {
-        this._setActivePage(pageIndex);
-        resolve(
-          await this._getSignedTransactions(transfers, inputs, remainder)
-        );
+      new Promise(async (resolve, reject) => {
+        try {
+          await this._setActivePage(pageIndex);
+          resolve(
+            await this._getSignedTransactions(transfers, inputs, remainder)
+          );
+        } catch (err) {
+          reject(err);
+        }
       });
 
     return new Promise((resolve, reject) => {

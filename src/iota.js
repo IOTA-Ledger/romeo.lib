@@ -285,7 +285,11 @@ function _getNewAddress(
       // If total number of addresses to generate is supplied, simply generate
       // and return the list of all addresses
       if (total) {
-        return callback(null, await getter(index, total));
+        try {
+          return callback(null, await getter(index, total));
+        } catch (err) {
+          return callback(err);
+        }
       } else {
         //  Case 2: no total provided
         //
@@ -295,43 +299,45 @@ function _getNewAddress(
         async.doWhilst(
           function(callback) {
             // Iteratee function
-            getter(index, 1).then(addresses => {
-              const newAddress = addresses[0];
+            getter(index, 1)
+              .then(addresses => {
+                const newAddress = addresses[0];
 
-              if (returnAll) {
-                allAddresses.push(newAddress);
-              }
-
-              // Increase the index
-              index += 1;
-
-              api.wereAddressesSpentFrom(newAddress, function(err, res) {
-                if (err) {
-                  return callback(err);
+                if (returnAll) {
+                  allAddresses.push(newAddress);
                 }
 
-                // Validity check
-                if (res[0]) {
-                  callback(null, newAddress, true, index - 1);
-                } else {
-                  // Check for txs if address isn't spent
-                  api.findTransactions({ addresses: [newAddress] }, function(
-                    err,
-                    transactions
-                  ) {
-                    if (err) {
-                      return callback(err);
-                    }
-                    callback(
+                // Increase the index
+                index += 1;
+
+                api.wereAddressesSpentFrom(newAddress, function(err, res) {
+                  if (err) {
+                    return callback(err);
+                  }
+
+                  // Validity check
+                  if (res[0]) {
+                    callback(null, newAddress, true, index - 1);
+                  } else {
+                    // Check for txs if address isn't spent
+                    api.findTransactions({ addresses: [newAddress] }, function(
                       err,
-                      newAddress,
-                      transactions.length > 0,
-                      index - 1
-                    );
-                  });
-                }
-              });
-            });
+                      transactions
+                    ) {
+                      if (err) {
+                        return callback(err);
+                      }
+                      callback(
+                        err,
+                        newAddress,
+                        transactions.length > 0,
+                        index - 1
+                      );
+                    });
+                  }
+                });
+              })
+              .catch(err => callback(err));
           },
           function(address, isUsed) {
             return isUsed;
