@@ -3,7 +3,7 @@ const MemoryStore = require('better-queue-memory');
 const { createIdentifier } = require('./utils');
 
 const DEFAULT_OPTIONS = {
-  checkOnline: require('is-online'),
+  checkOnline: async () => true, //require('is-online'),
   onChange: queue => {}
 };
 
@@ -23,7 +23,8 @@ function createQueue(options) {
       store: new MemoryStore({}),
       id: 'id',
       priority: (job, cb) => cb(null, job.priority || 1),
-      maxRetries: 5,
+      // disable retrying for now, to get potential ledger errors at once
+      // maxRetries: 5,
       retryDelay: 1000,
       cancelIfRunning: true,
       precondition: cb => checkOnline().then(online => cb(null, online)),

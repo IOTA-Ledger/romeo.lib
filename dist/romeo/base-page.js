@@ -21,7 +21,7 @@ var DEFAULT_OPTIONS = {
   index: 1,
   isCurrent: true,
   queue: null,
-  seed: null,
+  guard: null,
   iota: null
 };
 
@@ -46,12 +46,14 @@ var BasePage = function (_Base) {
     key: 'init',
     value: function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var priority = arguments[1];
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return this.sync();
+                return this.sync(force, priority);
 
               case 2:
                 return _context.abrupt('return', _context.sent);
@@ -76,25 +78,27 @@ var BasePage = function (_Base) {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
         var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         var priority = arguments[1];
+        var index;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                _context2.next = 2;
-                return this.syncAddresses(priority, force);
+                index = this.opts.index;
 
-              case 2:
+                if (!priority) {
+                  priority = index + 1;
+                }
+                _context2.next = 4;
+                return this.syncAddresses(priority, !force);
+
+              case 4:
                 if (Object.keys(this.addresses).length) {
                   _context2.next = 7;
                   break;
                 }
 
-                _context2.next = 5;
-                return this.getNewAddress();
-
-              case 5:
                 _context2.next = 7;
-                return this.syncAddresses(priority, true);
+                return this.getNewAddress();
 
               case 7:
                 return _context2.abrupt('return', this);
@@ -119,14 +123,16 @@ var BasePage = function (_Base) {
       var _opts = this.opts,
           index = _opts.index,
           isCurrent = _opts.isCurrent,
-          seed = _opts.seed;
+          guard = _opts.guard;
 
       return {
         index: index,
         isCurrent: isCurrent,
-        seed: seed,
-        addresses: this.addresses,
-        jobs: this.getJobs()
+        seed: guard.getPageSeed(index),
+        addresses: Object.assign({}, this.addresses),
+        jobs: this.getJobs().map(function (j) {
+          return Object.assign({}, j);
+        })
       };
     }
   }, {
@@ -171,7 +177,6 @@ var BasePage = function (_Base) {
       var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var _opts2 = this.opts,
           iota = _opts2.iota,
-          seed = _opts2.seed,
           queue = _opts2.queue,
           index = _opts2.index,
           isCurrent = _opts2.isCurrent;
@@ -180,10 +185,7 @@ var BasePage = function (_Base) {
       return new Promise(function (resolve, reject) {
         var addressPromise = function addressPromise() {
           return new Promise(function (resolve, reject) {
-            iota.api.getNewAddress(seed, {
-              index: Object.keys(_this4.addresses).length,
-              total: total
-            }, function () {
+            iota.api.ext.getNewAddress(index, Object.keys(_this4.addresses).length, total, function () {
               var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(err, addresses) {
                 return regeneratorRuntime.wrap(function _callee3$(_context3) {
                   while (1) {
@@ -193,29 +195,32 @@ var BasePage = function (_Base) {
                           reject(err);
                         }
                         addresses = Array.isArray(addresses) ? addresses : [addresses];
-                        _this4.applyAddresses(addresses);
-                        _context3.next = 5;
+                        _context3.next = 4;
+                        return _this4.applyAddresses(addresses);
+
+                      case 4:
+                        _context3.next = 6;
                         return _this4.restoreAddresses(addresses, 'Attaching new addresses', 'Could not attach new addresses');
 
-                      case 5:
-                        _context3.next = 7;
-                        return _this4.syncAddresses(100);
+                      case 6:
+                        _context3.next = 8;
+                        return _this4.syncAddresses(index, false, Object.keys(_this4.addresses).length);
 
-                      case 7:
+                      case 8:
                         _context3.t0 = callback;
 
                         if (!_context3.t0) {
-                          _context3.next = 11;
+                          _context3.next = 12;
                           break;
                         }
 
-                        _context3.next = 11;
+                        _context3.next = 12;
                         return callback(addresses);
 
-                      case 11:
+                      case 12:
                         resolve(addresses);
 
-                      case 12:
+                      case 13:
                       case 'end':
                         return _context3.stop();
                     }
@@ -223,7 +228,7 @@ var BasePage = function (_Base) {
                 }, _callee3, _this4);
               }));
 
-              return function (_x4, _x5) {
+              return function (_x5, _x6) {
                 return _ref3.apply(this, arguments);
               };
             }());
@@ -237,21 +242,24 @@ var BasePage = function (_Base) {
         }),
             job = _queue$add.job;
 
-        job.on('finish', resolve);
+        job.on('finish', function (result) {
+          _this4.onChange();
+          resolve(result);
+        });
         job.on('failed', function (err) {
           _this4.log('Could not add addresses', err);
           reject(err);
         });
+        _this4.onChange();
       });
     }
   }, {
     key: 'syncAddresses',
-    value: function syncAddresses(priority, cachedOnly) {
+    value: function syncAddresses(priority, cachedOnly, total) {
       var _this5 = this;
 
       var _opts3 = this.opts,
           iota = _opts3.iota,
-          seed = _opts3.seed,
           queue = _opts3.queue,
           index = _opts3.index,
           isCurrent = _opts3.isCurrent;
@@ -262,7 +270,7 @@ var BasePage = function (_Base) {
 
         var addressPromise = function addressPromise() {
           return new Promise(function (resolve, reject) {
-            iota.api.ext.getAddresses(seed, function (err, addresses) {
+            iota.api.ext.getAddresses(index, function (err, addresses) {
               if (!err) {
                 cached = addresses;
                 _this5.applyAddresses(addresses);
@@ -306,10 +314,10 @@ var BasePage = function (_Base) {
                 }, _callee4, _this5);
               }));
 
-              return function (_x6, _x7) {
+              return function (_x7, _x8) {
                 return _ref4.apply(this, arguments);
               };
-            }(), cachedOnly);
+            }(), cachedOnly, total);
           });
         };
 
@@ -321,11 +329,15 @@ var BasePage = function (_Base) {
         }),
             job = _queue$add2.job;
 
-        job.on('finish', resolve);
+        job.on('finish', function (result) {
+          _this5.onChange();
+          resolve(result);
+        });
         job.on('failed', function (err) {
           _this5.log('Could not sync page addresses', err);
           reject(err);
         });
+        _this5.onChange();
       });
     }
   }, {
@@ -335,7 +347,6 @@ var BasePage = function (_Base) {
 
       var _opts4 = this.opts,
           iota = _opts4.iota,
-          seed = _opts4.seed,
           queue = _opts4.queue,
           index = _opts4.index,
           isCurrent = _opts4.isCurrent;
@@ -343,7 +354,7 @@ var BasePage = function (_Base) {
 
       var sendPromise = function sendPromise() {
         return new Promise(function (resolve, reject) {
-          iota.api.sendTransfer(seed, IOTA_DEPTH, IOTA_MWM, transfers, { inputs: inputs }, function (err, result) {
+          iota.api.ext.sendTransfer(index, IOTA_DEPTH, IOTA_MWM, transfers, { inputs: inputs }, function (err, result) {
             if (err) {
               return reject(err);
             }
@@ -365,6 +376,7 @@ var BasePage = function (_Base) {
           _this6.log(messageFail || 'Could not send transfer to the tangle', err);
           reject(err);
         });
+        _this6.onChange();
       });
     }
   }, {
@@ -374,30 +386,9 @@ var BasePage = function (_Base) {
 
       message = message || 'Restoring addresses';
       messageFail = messageFail || 'Could not restore the addresses';
-      return Promise.all(addresses.map(function () {
-        var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(address) {
-          return regeneratorRuntime.wrap(function _callee5$(_context5) {
-            while (1) {
-              switch (_context5.prev = _context5.next) {
-                case 0:
-                  _context5.next = 2;
-                  return _this7.sendTransfers([{ address: address, value: 0 }], null, message, messageFail);
-
-                case 2:
-                  return _context5.abrupt('return', _context5.sent);
-
-                case 3:
-                case 'end':
-                  return _context5.stop();
-              }
-            }
-          }, _callee5, _this7);
-        }));
-
-        return function (_x8) {
-          return _ref5.apply(this, arguments);
-        };
-      }())).then(function (res) {
+      return this.sendTransfers(addresses.map(function (address) {
+        return { address: address, value: 0 };
+      }), null, message, messageFail).then(function (res) {
         _this7.onChange();
         return res;
       });
@@ -405,33 +396,33 @@ var BasePage = function (_Base) {
   }, {
     key: 'restoreMissingAddresses',
     value: function () {
-      var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(total, message, messageFail) {
+      var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(total, message, messageFail) {
         var addresses;
-        return regeneratorRuntime.wrap(function _callee6$(_context6) {
+        return regeneratorRuntime.wrap(function _callee5$(_context5) {
           while (1) {
-            switch (_context6.prev = _context6.next) {
+            switch (_context5.prev = _context5.next) {
               case 0:
-                _context6.next = 2;
+                _context5.next = 2;
                 return this.getNewAddress(total);
 
               case 2:
-                addresses = _context6.sent;
-                _context6.next = 5;
+                addresses = _context5.sent;
+                _context5.next = 5;
                 return this.restoreAddresses(addresses, message, messageFail);
 
               case 5:
-                return _context6.abrupt('return', _context6.sent);
+                return _context5.abrupt('return', _context5.sent);
 
               case 6:
               case 'end':
-                return _context6.stop();
+                return _context5.stop();
             }
           }
-        }, _callee6, this);
+        }, _callee5, this);
       }));
 
       function restoreMissingAddresses(_x9, _x10, _x11) {
-        return _ref6.apply(this, arguments);
+        return _ref5.apply(this, arguments);
       }
 
       return restoreMissingAddresses;
