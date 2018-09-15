@@ -2,14 +2,30 @@ const { BaseGuard } = require('./base');
 const Transport = require('@ledgerhq/hw-transport-u2f').default;
 const AppIota = require('hw-app-iota').default;
 const semver = require('semver');
-const { LEDGER_APP_VERSION_RANGE } = require('../config');
+const {
+  LEDGER_APP_VERSION_RANGE,
+  LEDGER_PAGE_BIP32_PATH
+} = require('../config');
 
-// use testnet path for now
-const BIP44_PATH = "44'/1'/0'";
+// the iota lib needs a seed even for 0-value transactions
 const DUMMY_SEED = '9'.repeat(81);
+
+const ADDRESS_DERIVATION = (account, pageIndex, keyIndex) => ({
+  path: LEDGER_PAGE_BIP32_PATH(account, pageIndex),
+  keyIndex
+});
+const PAGE_ADDRESS_DERIVATION = (account, pageIndex) => ({
+  path: LEDGER_PAGE_BIP32_PATH(account, pageIndex),
+  keyIndex: 0
+});
+const KEY_ADDRESS_DERIVATION = account => ({
+  path: LEDGER_PAGE_BIP32_PATH(account, 0),
+  keyIndex: 0xffffffff
+});
 
 const DEFAULT_OPTIONS = {
   concurrent: 1,
+  account: 0,
   security: 2,
   debug: false
 };
@@ -29,13 +45,13 @@ class LedgerGuard extends BaseGuard {
     if (opts.debug) {
       transport.setDebugMode(true);
     }
-    // wait 3s for result
-    transport.setExchangeTimeout(3000);
-    const hwapp = new AppIota(transport);
 
+    const hwapp = new AppIota(transport);
     await LedgerGuard._checkVersion(hwapp);
-    await LedgerGuard._setInternalSeed(hwapp, 2);
-    const keyAddress = await hwapp.getAddress(0);
+
+    const { path, keyIndex } = KEY_ADDRESS_DERIVATION(opts.account);
+    await hwapp.setActiveSeed(path, 1);
+    const keyAddress = await hwapp.getAddress(keyIndex);
 
     return new LedgerGuard(hwapp, keyAddress.substr(0, 32), opts);
   }
@@ -54,17 +70,17 @@ class LedgerGuard extends BaseGuard {
 
   ///////// Private methods should not be called directly! /////////
 
-  async _setActivePage(pageIndex) {
-    await this._setPageSeed(pageIndex);
-  }
-
-  async _getPages(index, total) {
-    await this._setPageSeed(-1);
-    return await this._getGenericAddresses(index, total);
+  async _getPages(pageIndex, total) {
+    this._setActivePage(-1);
+    return await this._getAddresses(pageIndex, total);
   }
 
   async _getAddresses(index, total) {
-    return await this._getGenericAddresses(index, total);
+    const addresses = [];
+    for (let i = 0; i < total; i++) {
+      addresses.push(await this._getGenericAddress(index + i));
+    }
+    return addresses;
   }
 
   async _getSignedTransactions(transfers, inputs, remainder) {
@@ -102,39 +118,32 @@ class LedgerGuard extends BaseGuard {
       }))();
   }
 
-  async _getGenericAddresses(index, total) {
-    var addresses = [];
-    for (var i = 0; i < total; i++) {
-      const keyIndex = index + i;
-      const address = await this.hwapp.getAddress(keyIndex);
-      if (this.opts.debug) {
-        console.log('getGenericAddress; index=%i, key=%s', keyIndex, address);
+  async _setActiveSeed(path) {
+    const { debug, security } = this.opts;
+    // only pass the command, if the path has indeed changed
+    if (this.activePath !== path) {
+      if (debug) {
+        console.log('setActiveSeed; path=%s, security=%i', path, security);
       }
-      addresses.push(address);
+      await this.hwapp.setActiveSeed(path, security);
+      this.activePath = path;
     }
-
-    return addresses;
   }
 
-  async _setPageSeed(pageIndex) {
-    if (this.activePageIndex != pageIndex) {
-      if (pageIndex < 0) {
-        if (this.opts.debug) {
-          console.log('setInternalSeed; index=%i', 1);
-        }
-        await LedgerGuard._setInternalSeed(this.hwapp, 1);
-      } else {
-        if (this.opts.debug) {
-          console.log('setExternalSeed; index=%i', pageIndex);
-        }
-        await this.hwapp.setActiveSeed(
-          LedgerGuard._getBipPath(0, pageIndex),
-          this.opts.security
-        );
-      }
+  async _getGenericAddress(index) {
+    const { debug, account } = this.opts;
+    // get the corresponding address derivation
+    const { path, keyIndex } =
+      this.activePageIndex < 0
+        ? PAGE_ADDRESS_DERIVATION(account, index)
+        : ADDRESS_DERIVATION(account, this.activePageIndex, index);
 
-      this.activePageIndex = pageIndex;
+    await this._setActiveSeed(path);
+    const address = await this.hwapp.getAddress(keyIndex);
+    if (debug) {
+      console.log('getAddress; index=%i, key=%s', keyIndex, address);
     }
+    return address;
   }
 
   static async _checkVersion(hwapp) {
@@ -148,14 +157,6 @@ class LedgerGuard extends BaseGuard {
         '"  before you can login!';
       throw new Error(message);
     }
-  }
-
-  static async _setInternalSeed(hwapp, index) {
-    await hwapp.setActiveSeed(LedgerGuard._getBipPath(1, index), 1);
-  }
-
-  static _getBipPath(change, index) {
-    return BIP44_PATH + '/' + change + '/' + index;
   }
 }
 
