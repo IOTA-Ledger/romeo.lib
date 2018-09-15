@@ -17,30 +17,33 @@ var Transport = require('@ledgerhq/hw-transport-u2f').default;
 var AppIota = require('hw-app-iota').default;
 var semver = require('semver');
 
-var _require2 = require('../config'),
-    LEDGER_APP_VERSION_RANGE = _require2.LEDGER_APP_VERSION_RANGE,
-    LEDGER_PAGE_BIP32_PATH = _require2.LEDGER_PAGE_BIP32_PATH;
+// allowed version range for the Ledger Nano app
+var APP_VERSION_RANGE = '^0.4.0';
 
-// the iota lib needs a seed even for 0-value transactions
+// BIP32 path to derive the page seed on the Ledger Nano
+var PAGE_BIP32_PATH = function PAGE_BIP32_PATH(account, pageIndex) {
+  return '44\'/4218\'/' + account + '\'/' + pageIndex + '\'';
+};
 
-
+// the iota lib needs a seed even for transactions without inputs
 var DUMMY_SEED = '9'.repeat(81);
 
+// derivation rules for the different type of addresses
 var ADDRESS_DERIVATION = function ADDRESS_DERIVATION(account, pageIndex, keyIndex) {
   return {
-    path: LEDGER_PAGE_BIP32_PATH(account, pageIndex),
+    path: PAGE_BIP32_PATH(account, pageIndex),
     keyIndex: keyIndex
   };
 };
 var PAGE_ADDRESS_DERIVATION = function PAGE_ADDRESS_DERIVATION(account, pageIndex) {
   return {
-    path: LEDGER_PAGE_BIP32_PATH(account, pageIndex),
+    path: PAGE_BIP32_PATH(account, pageIndex),
     keyIndex: 0
   };
 };
 var KEY_ADDRESS_DERIVATION = function KEY_ADDRESS_DERIVATION(account) {
   return {
-    path: LEDGER_PAGE_BIP32_PATH(account, 0),
+    path: PAGE_BIP32_PATH(account, 0),
     keyIndex: 0xffffffff
   };
 };
@@ -388,12 +391,12 @@ var LedgerGuard = function (_BaseGuard) {
                 _context7.t1 = _context7.sent;
                 appVersion = _context7.t0.clean.call(_context7.t0, _context7.t1);
 
-                if (semver.satisfies(appVersion, LEDGER_APP_VERSION_RANGE)) {
+                if (semver.satisfies(appVersion, APP_VERSION_RANGE)) {
                   _context7.next = 8;
                   break;
                 }
 
-                message = 'Your IOTA-Ledger app version ' + appVersion + ' is outdated! You must update to a version satisfying "' + LEDGER_APP_VERSION_RANGE + '"  before you can login!';
+                message = 'Your IOTA-Ledger app version ' + appVersion + ' is outdated! You must update to a version satisfying "' + APP_VERSION_RANGE + '"  before you can login!';
                 throw new Error(message);
 
               case 8:

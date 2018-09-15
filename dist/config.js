@@ -14,20 +14,10 @@ var IOTA_MWM = value('IOTA_MWM', 14);
 
 var PAGE_RESYNC_SECONDS = value('PAGE_RESYNC_SECONDS', 180);
 
-// allowed version range for the Ledger Nano app
-var LEDGER_APP_VERSION_RANGE = '^0.4.0';
-
-// BIP32 path to derive the page seed on the Ledger Nano
-var LEDGER_PAGE_BIP32_PATH = function LEDGER_PAGE_BIP32_PATH(account, pageIndex) {
-  return '44\'/4218\'/' + account + '\'/' + pageIndex + '\'';
-};
-
 module.exports = {
   IOTA_API_ENDPOINT: IOTA_API_ENDPOINT,
   IOTA_DEPTH: IOTA_DEPTH,
   IOTA_MWM: IOTA_MWM,
   IOTA_BALANCE_TRESHOLD: IOTA_BALANCE_TRESHOLD,
-  PAGE_RESYNC_SECONDS: PAGE_RESYNC_SECONDS,
-  LEDGER_APP_VERSION_RANGE: LEDGER_APP_VERSION_RANGE,
-  LEDGER_PAGE_BIP32_PATH: LEDGER_PAGE_BIP32_PATH
+  PAGE_RESYNC_SECONDS: PAGE_RESYNC_SECONDS
 };

@@ -2,24 +2,28 @@ const { BaseGuard } = require('./base');
 const Transport = require('@ledgerhq/hw-transport-u2f').default;
 const AppIota = require('hw-app-iota').default;
 const semver = require('semver');
-const {
-  LEDGER_APP_VERSION_RANGE,
-  LEDGER_PAGE_BIP32_PATH
-} = require('../config');
 
-// the iota lib needs a seed even for 0-value transactions
+// allowed version range for the Ledger Nano app
+const APP_VERSION_RANGE = '^0.4.0';
+
+// BIP32 path to derive the page seed on the Ledger Nano
+const PAGE_BIP32_PATH = (account, pageIndex) =>
+  `44'/4218'/${account}'/${pageIndex}'`;
+
+// the iota lib needs a seed even for transactions without inputs
 const DUMMY_SEED = '9'.repeat(81);
 
+// derivation rules for the different type of addresses
 const ADDRESS_DERIVATION = (account, pageIndex, keyIndex) => ({
-  path: LEDGER_PAGE_BIP32_PATH(account, pageIndex),
+  path: PAGE_BIP32_PATH(account, pageIndex),
   keyIndex
 });
 const PAGE_ADDRESS_DERIVATION = (account, pageIndex) => ({
-  path: LEDGER_PAGE_BIP32_PATH(account, pageIndex),
+  path: PAGE_BIP32_PATH(account, pageIndex),
   keyIndex: 0
 });
 const KEY_ADDRESS_DERIVATION = account => ({
-  path: LEDGER_PAGE_BIP32_PATH(account, 0),
+  path: PAGE_BIP32_PATH(account, 0),
   keyIndex: 0xffffffff
 });
 
@@ -148,12 +152,12 @@ class LedgerGuard extends BaseGuard {
 
   static async _checkVersion(hwapp) {
     const appVersion = semver.clean(await hwapp.getAppVersion());
-    if (!semver.satisfies(appVersion, LEDGER_APP_VERSION_RANGE)) {
+    if (!semver.satisfies(appVersion, APP_VERSION_RANGE)) {
       const message =
         'Your IOTA-Ledger app version ' +
         appVersion +
         ' is outdated! You must update to a version satisfying "' +
-        LEDGER_APP_VERSION_RANGE +
+        APP_VERSION_RANGE +
         '"  before you can login!';
       throw new Error(message);
     }
