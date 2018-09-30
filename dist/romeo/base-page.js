@@ -332,7 +332,7 @@ var BasePage = function (_Base) {
     }
   }, {
     key: 'sendTransfers',
-    value: function sendTransfers(transfers, inputs, message, messageFail, priority, preventRetries) {
+    value: function sendTransfers(transfers, inputs, message, messageFail, priority, preventRetries, options) {
       var _this6 = this;
 
       var _opts4 = this.opts,
@@ -344,7 +344,10 @@ var BasePage = function (_Base) {
 
       var sendPromise = function sendPromise() {
         return new Promise(function (resolve, reject) {
-          iota.api.ext.sendTransfer(index, IOTA_DEPTH, IOTA_MWM, transfers, { inputs: inputs }, function (err, result) {
+          iota.api.ext.sendTransfer(index, IOTA_DEPTH, IOTA_MWM, transfers, Object.assign({}, options, {
+            inputs: inputs,
+            addressIndex: Object.keys(_this6.addresses).length
+          }), function (err, result) {
             if (err) {
               return reject(err);
             }

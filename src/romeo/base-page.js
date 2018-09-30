@@ -189,7 +189,8 @@ class BasePage extends Base {
     message,
     messageFail,
     priority,
-    preventRetries
+    preventRetries,
+    options
   ) {
     const { iota, queue, index, isCurrent } = this.opts;
 
@@ -200,7 +201,10 @@ class BasePage extends Base {
           IOTA_DEPTH,
           IOTA_MWM,
           transfers,
-          { inputs },
+          Object.assign({}, options, {
+            inputs,
+            addressIndex: Object.keys(this.addresses).length
+          }),
           (err, result) => {
             if (err) {
               return reject(err);

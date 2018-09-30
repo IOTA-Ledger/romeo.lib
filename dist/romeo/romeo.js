@@ -262,102 +262,97 @@ var Romeo = function (_Base) {
                 address = newPage.getCurrentAddress().address;
                 inputs = currentPage.getInputs(includeReuse);
 
-                // TODO: remove true
-
-                if (!(true || this.guard.opts.sequentialTransfers)) {
-                  _context4.next = 45;
+                if (!this.guard.opts.sequentialTransfers) {
+                  _context4.next = 43;
                   break;
                 }
 
-                console.log('sequential transfer!!!!!!!!!!!');
                 _iteratorNormalCompletion = true;
                 _didIteratorError = false;
                 _iteratorError = undefined;
-                _context4.prev = 18;
+                _context4.prev = 17;
                 _iterator = inputs[Symbol.iterator]();
 
-              case 20:
+              case 19:
                 if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context4.next = 29;
+                  _context4.next = 27;
                   break;
                 }
 
                 input = _step.value;
                 value = input.balance;
-
-                console.log('sending', value, 'from', input, 'to', address);
-                _context4.next = 26;
+                _context4.next = 24;
                 return currentPage.sendTransfers([{ address: address, value: value }], [input], 'Moving funds to the new page sequentially.', 'Failed moving all or some funds!', null, preventRetries);
 
-              case 26:
+              case 24:
                 _iteratorNormalCompletion = true;
-                _context4.next = 20;
+                _context4.next = 19;
+                break;
+
+              case 27:
+                _context4.next = 33;
                 break;
 
               case 29:
-                _context4.next = 35;
-                break;
-
-              case 31:
-                _context4.prev = 31;
-                _context4.t2 = _context4['catch'](18);
+                _context4.prev = 29;
+                _context4.t2 = _context4['catch'](17);
                 _didIteratorError = true;
                 _iteratorError = _context4.t2;
 
-              case 35:
-                _context4.prev = 35;
-                _context4.prev = 36;
+              case 33:
+                _context4.prev = 33;
+                _context4.prev = 34;
 
                 if (!_iteratorNormalCompletion && _iterator.return) {
                   _iterator.return();
                 }
 
-              case 38:
-                _context4.prev = 38;
+              case 36:
+                _context4.prev = 36;
 
                 if (!_didIteratorError) {
-                  _context4.next = 41;
+                  _context4.next = 39;
                   break;
                 }
 
                 throw _iteratorError;
 
+              case 39:
+                return _context4.finish(36);
+
+              case 40:
+                return _context4.finish(33);
+
               case 41:
-                return _context4.finish(38);
-
-              case 42:
-                return _context4.finish(35);
-
-              case 43:
-                _context4.next = 49;
+                _context4.next = 47;
                 break;
 
-              case 45:
+              case 43:
                 _value = inputs.reduce(function (t, i) {
                   return t + i.balance;
                 }, 0);
 
                 if (!(_value > 0)) {
-                  _context4.next = 49;
+                  _context4.next = 47;
                   break;
                 }
 
-                _context4.next = 49;
+                _context4.next = 47;
                 return currentPage.sendTransfers([{ address: address, value: _value }], inputs, 'Moving funds to the new page', 'Failed moving funds!', null, preventRetries);
 
-              case 49:
+              case 47:
 
                 currentPage.syncTransactions();
                 newPage.syncTransactions();
                 this.onChange();
                 return _context4.abrupt('return', newPage);
 
-              case 53:
+              case 51:
               case 'end':
                 return _context4.stop();
             }
           }
-        }, _callee4, this, [[18, 31, 35, 43], [36,, 38, 42]]);
+        }, _callee4, this, [[17, 29, 33, 41], [34,, 36, 40]]);
       }));
 
       function newPage() {
