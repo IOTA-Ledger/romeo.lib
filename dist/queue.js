@@ -31,7 +31,8 @@ var DEFAULT_OPTIONS = {
 
     return checkOnline;
   }(), //require('is-online'),
-  onChange: function onChange(queue) {}
+  onChange: function onChange(queue) {},
+  maxRetries: 5
 };
 
 function createQueue(options) {
@@ -41,11 +42,19 @@ function createQueue(options) {
   var jobs = {};
 
   var queue = new Queue(function (input, cb) {
-    input.promise().then(function (result) {
-      return cb(null, result);
-    }).catch(function (error) {
-      return cb(error, null);
-    });
+    var runner = function runner() {
+      return input.promise().then(function (result) {
+        return cb(null, result);
+      }).catch(function (error) {
+        if (input.tries < opts.maxRetries && !input.opts.preventRetries) {
+          input.tries++;
+          runner();
+        } else {
+          cb(error, null);
+        }
+      });
+    };
+    runner();
   }, {
     store: new MemoryStore({}),
     id: 'id',
@@ -75,7 +84,7 @@ function createQueue(options) {
 
   function add(promise, priority, opts) {
     var id = createIdentifier();
-    var job = queue.push({ id: id, promise: promise, priority: priority });
+    var job = queue.push({ id: id, promise: promise, priority: priority, tries: 0, opts: opts });
     job.opts = opts;
     job.id = id;
     job.priority = priority;

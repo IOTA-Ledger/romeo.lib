@@ -98,6 +98,10 @@ function createAPI({ path, password, provider, database, guard }) {
       });
   }
 
+  function setAddresses(seed, addresses) {
+    return db.put(`addresses-${seed}`, addresses);
+  }
+
   function getAddresses(seed, onCache, onLive, cachedOnly = false, total) {
     const callback = (error, results) => {
       if (error) {
@@ -251,6 +255,7 @@ function createAPI({ path, password, provider, database, guard }) {
     sendTransfer,
     getNewAddress,
     getBalances,
+    setAddresses,
     getAddresses,
     getTransactions,
     getTransactionObjects,

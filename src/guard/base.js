@@ -4,7 +4,9 @@ const { createIdentifier } = require('../utils');
 const createAPI = require('../iota');
 
 const DEFAULT_OPTIONS = {
-  concurrent: 1
+  concurrent: 1,
+  name: 'simple',
+  sequentialTransfers: false
 };
 
 class BaseGuard {

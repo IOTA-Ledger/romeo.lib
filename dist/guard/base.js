@@ -15,7 +15,9 @@ var _require = require('../utils'),
 var createAPI = require('../iota');
 
 var DEFAULT_OPTIONS = {
-  concurrent: 1
+  concurrent: 1,
+  name: 'simple',
+  sequentialTransfers: false
 };
 
 var BaseGuard = function () {

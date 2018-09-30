@@ -108,7 +108,7 @@ class Romeo extends Base {
   }
 
   async newPage(opts = {}, onCreate) {
-    const { sourcePage, includeReuse = false } = opts;
+    const { preventRetries, sourcePage, includeReuse = false } = opts;
     const currentPage = sourcePage || this.pages.getCurrent();
 
     const newPage = this.pages.getByAddress((await this.pages.getNewPage())[0])
@@ -120,17 +120,35 @@ class Romeo extends Base {
     }
     const address = newPage.getCurrentAddress().address;
     const inputs = currentPage.getInputs(includeReuse);
-    const value = inputs.reduce((t, i) => t + i.balance, 0);
-    if (value > 0) {
-      await currentPage.sendTransfers(
-        [{ address, value }],
-        inputs,
-        'Moving funds to the new page',
-        'Failed moving funds!'
-      );
-      currentPage.syncTransactions();
-      newPage.syncTransactions();
+
+    if (this.guard.opts.sequentialTransfers) {
+      for (let input of inputs) {
+        const value = input.balance;
+        await currentPage.sendTransfers(
+          [{ address, value }],
+          [input],
+          'Moving funds to the new page sequentially.',
+          'Failed moving all or some funds!',
+          null,
+          preventRetries
+        );
+      }
+    } else {
+      const value = inputs.reduce((t, i) => t + i.balance, 0);
+      if (value > 0) {
+        await currentPage.sendTransfers(
+          [{ address, value }],
+          inputs,
+          'Moving funds to the new page',
+          'Failed moving funds!',
+          null,
+          preventRetries
+        );
+      }
     }
+
+    currentPage.syncTransactions();
+    newPage.syncTransactions();
     this.onChange();
     return newPage;
   }

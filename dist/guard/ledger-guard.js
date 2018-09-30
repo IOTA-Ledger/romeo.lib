@@ -38,7 +38,10 @@ var LedgerGuard = function (_BaseGuard) {
   function LedgerGuard(hwapp, key, options) {
     _classCallCheck(this, LedgerGuard);
 
-    var _this = _possibleConstructorReturn(this, (LedgerGuard.__proto__ || Object.getPrototypeOf(LedgerGuard)).call(this, options));
+    var _this = _possibleConstructorReturn(this, (LedgerGuard.__proto__ || Object.getPrototypeOf(LedgerGuard)).call(this, Object.assign({}, options, {
+      name: 'ledger',
+      sequentialTransfers: true
+    })));
 
     _this.opts = options;
 

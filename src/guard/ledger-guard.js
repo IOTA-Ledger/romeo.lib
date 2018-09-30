@@ -16,7 +16,12 @@ const DEFAULT_OPTIONS = {
 
 class LedgerGuard extends BaseGuard {
   constructor(hwapp, key, options) {
-    super(options);
+    super(
+      Object.assign({}, options, {
+        name: 'ledger',
+        sequentialTransfers: true
+      })
+    );
     this.opts = options;
 
     this.hwapp = hwapp;

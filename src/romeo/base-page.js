@@ -99,12 +99,11 @@ class BasePage extends Base {
                 `Attaching new addresses`,
                 'Could not attach new addresses'
               );
-              await this.syncAddresses(
+              await iota.api.ext.setAddresses(
                 index,
-                false,
-                Object.keys(this.addresses).length
+                Object.keys(this.addresses)
               );
-              callback && (await callback(addresses));
+              callback && callback(addresses);
               resolve(addresses);
             }
           );
@@ -184,7 +183,14 @@ class BasePage extends Base {
     });
   }
 
-  sendTransfers(transfers, inputs, message, messageFail, priority) {
+  sendTransfers(
+    transfers,
+    inputs,
+    message,
+    messageFail,
+    priority,
+    preventRetries
+  ) {
     const { iota, queue, index, isCurrent } = this.opts;
 
     const sendPromise = () =>
@@ -211,7 +217,8 @@ class BasePage extends Base {
         {
           page: index,
           type: 'SEND_TRANSFER',
-          description: message || `Sending transfers`
+          description: message || `Sending transfers`,
+          preventRetries
         }
       );
       job.on('finish', resolve);

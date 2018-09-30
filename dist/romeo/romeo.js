@@ -232,13 +232,13 @@ var Romeo = function (_Base) {
         var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var onCreate = arguments[1];
 
-        var sourcePage, _opts$includeReuse, includeReuse, currentPage, newPage, address, inputs, value;
+        var preventRetries, sourcePage, _opts$includeReuse, includeReuse, currentPage, newPage, address, inputs, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, input, value, _value;
 
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                sourcePage = opts.sourcePage, _opts$includeReuse = opts.includeReuse, includeReuse = _opts$includeReuse === undefined ? false : _opts$includeReuse;
+                preventRetries = opts.preventRetries, sourcePage = opts.sourcePage, _opts$includeReuse = opts.includeReuse, includeReuse = _opts$includeReuse === undefined ? false : _opts$includeReuse;
                 currentPage = sourcePage || this.pages.getCurrent();
                 _context4.t0 = this.pages;
                 _context4.next = 5;
@@ -261,32 +261,103 @@ var Romeo = function (_Base) {
               case 11:
                 address = newPage.getCurrentAddress().address;
                 inputs = currentPage.getInputs(includeReuse);
-                value = inputs.reduce(function (t, i) {
-                  return t + i.balance;
-                }, 0);
 
-                if (!(value > 0)) {
-                  _context4.next = 19;
+                // TODO: remove true
+
+                if (!(true || this.guard.opts.sequentialTransfers)) {
+                  _context4.next = 45;
                   break;
                 }
 
-                _context4.next = 17;
-                return currentPage.sendTransfers([{ address: address, value: value }], inputs, 'Moving funds to the new page', 'Failed moving funds!');
+                console.log('sequential transfer!!!!!!!!!!!');
+                _iteratorNormalCompletion = true;
+                _didIteratorError = false;
+                _iteratorError = undefined;
+                _context4.prev = 18;
+                _iterator = inputs[Symbol.iterator]();
 
-              case 17:
+              case 20:
+                if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                  _context4.next = 29;
+                  break;
+                }
+
+                input = _step.value;
+                value = input.balance;
+
+                console.log('sending', value, 'from', input, 'to', address);
+                _context4.next = 26;
+                return currentPage.sendTransfers([{ address: address, value: value }], [input], 'Moving funds to the new page sequentially.', 'Failed moving all or some funds!', null, preventRetries);
+
+              case 26:
+                _iteratorNormalCompletion = true;
+                _context4.next = 20;
+                break;
+
+              case 29:
+                _context4.next = 35;
+                break;
+
+              case 31:
+                _context4.prev = 31;
+                _context4.t2 = _context4['catch'](18);
+                _didIteratorError = true;
+                _iteratorError = _context4.t2;
+
+              case 35:
+                _context4.prev = 35;
+                _context4.prev = 36;
+
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                  _iterator.return();
+                }
+
+              case 38:
+                _context4.prev = 38;
+
+                if (!_didIteratorError) {
+                  _context4.next = 41;
+                  break;
+                }
+
+                throw _iteratorError;
+
+              case 41:
+                return _context4.finish(38);
+
+              case 42:
+                return _context4.finish(35);
+
+              case 43:
+                _context4.next = 49;
+                break;
+
+              case 45:
+                _value = inputs.reduce(function (t, i) {
+                  return t + i.balance;
+                }, 0);
+
+                if (!(_value > 0)) {
+                  _context4.next = 49;
+                  break;
+                }
+
+                _context4.next = 49;
+                return currentPage.sendTransfers([{ address: address, value: _value }], inputs, 'Moving funds to the new page', 'Failed moving funds!', null, preventRetries);
+
+              case 49:
+
                 currentPage.syncTransactions();
                 newPage.syncTransactions();
-
-              case 19:
                 this.onChange();
                 return _context4.abrupt('return', newPage);
 
-              case 21:
+              case 53:
               case 'end':
                 return _context4.stop();
             }
           }
-        }, _callee4, this);
+        }, _callee4, this, [[18, 31, 35, 43], [36,, 38, 42]]);
       }));
 
       function newPage() {

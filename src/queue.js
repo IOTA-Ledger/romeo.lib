@@ -4,7 +4,8 @@ const { createIdentifier } = require('./utils');
 
 const DEFAULT_OPTIONS = {
   checkOnline: async () => true, //require('is-online'),
-  onChange: queue => {}
+  onChange: queue => {},
+  maxRetries: 5
 };
 
 function createQueue(options) {
@@ -14,10 +15,19 @@ function createQueue(options) {
 
   const queue = new Queue(
     (input, cb) => {
-      input
-        .promise()
-        .then(result => cb(null, result))
-        .catch(error => cb(error, null));
+      const runner = () =>
+        input
+          .promise()
+          .then(result => cb(null, result))
+          .catch(error => {
+            if (input.tries < opts.maxRetries && !input.opts.preventRetries) {
+              input.tries++;
+              runner();
+            } else {
+              cb(error, null);
+            }
+          });
+      runner();
     },
     {
       store: new MemoryStore({}),
@@ -43,7 +53,7 @@ function createQueue(options) {
 
   function add(promise, priority, opts) {
     const id = createIdentifier();
-    const job = queue.push({ id, promise, priority });
+    const job = queue.push({ id, promise, priority, tries: 0, opts });
     job.opts = opts;
     job.id = id;
     job.priority = priority;

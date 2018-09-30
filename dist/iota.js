@@ -120,6 +120,10 @@ function createAPI(_ref) {
     });
   }
 
+  function setAddresses(seed, addresses) {
+    return db.put('addresses-' + seed, addresses);
+  }
+
   function getAddresses(seed, onCache, onLive) {
     var cachedOnly = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     var total = arguments[4];
@@ -261,6 +265,7 @@ function createAPI(_ref) {
     sendTransfer: sendTransfer,
     getNewAddress: getNewAddress,
     getBalances: getBalances,
+    setAddresses: setAddresses,
     getAddresses: getAddresses,
     getTransactions: getTransactions,
     getTransactionObjects: getTransactionObjects,

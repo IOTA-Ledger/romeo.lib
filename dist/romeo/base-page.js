@@ -204,23 +204,13 @@ var BasePage = function (_Base) {
 
                       case 6:
                         _context3.next = 8;
-                        return _this4.syncAddresses(index, false, Object.keys(_this4.addresses).length);
+                        return iota.api.ext.setAddresses(index, Object.keys(_this4.addresses));
 
                       case 8:
-                        _context3.t0 = callback;
-
-                        if (!_context3.t0) {
-                          _context3.next = 12;
-                          break;
-                        }
-
-                        _context3.next = 12;
-                        return callback(addresses);
-
-                      case 12:
+                        callback && callback(addresses);
                         resolve(addresses);
 
-                      case 13:
+                      case 10:
                       case 'end':
                         return _context3.stop();
                     }
@@ -342,7 +332,7 @@ var BasePage = function (_Base) {
     }
   }, {
     key: 'sendTransfers',
-    value: function sendTransfers(transfers, inputs, message, messageFail, priority) {
+    value: function sendTransfers(transfers, inputs, message, messageFail, priority, preventRetries) {
       var _this6 = this;
 
       var _opts4 = this.opts,
@@ -367,7 +357,8 @@ var BasePage = function (_Base) {
         var _queue$add3 = queue.add(sendPromise, priority || (isCurrent ? 20 : 10), {
           page: index,
           type: 'SEND_TRANSFER',
-          description: message || 'Sending transfers'
+          description: message || 'Sending transfers',
+          preventRetries: preventRetries
         }),
             job = _queue$add3.job;
 
