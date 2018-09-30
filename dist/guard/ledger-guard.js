@@ -43,8 +43,6 @@ var LedgerGuard = function (_BaseGuard) {
       sequentialTransfers: true
     })));
 
-    _this.opts = options;
-
     _this.hwapp = hwapp;
     _this.key = key;
     return _this;

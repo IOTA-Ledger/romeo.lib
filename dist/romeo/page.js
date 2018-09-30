@@ -78,7 +78,7 @@ var Page = function (_BasePage) {
 
               case 6:
                 _context.next = 8;
-                return this.sync(force, priority);
+                return this.sync(force, priority, true);
 
               case 8:
                 return _context.abrupt('return', _context.sent);
@@ -103,6 +103,7 @@ var Page = function (_BasePage) {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
         var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         var priority = arguments[1];
+        var initial = arguments[2];
 
         var _opts2, db, index, isCurrent;
 
@@ -117,75 +118,100 @@ var Page = function (_BasePage) {
                 }
 
                 if (this.isSyncing) {
-                  _context2.next = 29;
+                  _context2.next = 39;
                   break;
                 }
 
                 _context2.prev = 3;
 
                 this.isSyncing = true;
-                _context2.next = 7;
-                return this.syncAddresses(priority, !force);
 
-              case 7:
-                if (!(isCurrent && !Object.values(this.addresses).find(function (a) {
-                  return !a.spent;
-                }))) {
-                  _context2.next = 10;
+                if (!initial) {
+                  _context2.next = 15;
                   break;
                 }
 
+                _context2.next = 8;
+                return this.syncAddresses(priority, true);
+
+              case 8:
                 _context2.next = 10;
-                return this.getNewAddress();
+                return this.syncTransactions(priority, true);
 
               case 10:
                 _context2.next = 12;
-                return this.syncTransactions(priority, !force);
+                return this.syncBalances(priority, true);
 
               case 12:
                 _context2.next = 14;
-                return this.syncBalances(priority, !force);
+                return this.syncSpent(priority, true);
 
               case 14:
-                _context2.next = 16;
+                this.onChange();
+
+              case 15:
+                _context2.next = 17;
+                return this.syncAddresses(priority, !force);
+
+              case 17:
+                if (!(isCurrent && !Object.values(this.addresses).find(function (a) {
+                  return !a.spent;
+                }))) {
+                  _context2.next = 20;
+                  break;
+                }
+
+                _context2.next = 20;
+                return this.getNewAddress();
+
+              case 20:
+                _context2.next = 22;
+                return this.syncTransactions(priority, !force);
+
+              case 22:
+                _context2.next = 24;
+                return this.syncBalances(priority, !force);
+
+              case 24:
+                _context2.next = 26;
                 return this.syncSpent(priority, !force);
 
-              case 16:
+              case 26:
                 this.isSyncing = false;
                 this.lastSynced = isCurrent || force ? new Date() : this.lastSynced;
 
                 if (!db) {
-                  _context2.next = 22;
+                  _context2.next = 32;
                   break;
                 }
 
-                _context2.next = 21;
+                _context2.next = 31;
                 return db.put('lastsynced-' + index, this.lastSynced);
 
-              case 21:
+              case 31:
                 this.onChange();
 
-              case 22:
-                _context2.next = 29;
+              case 32:
+                _context2.next = 39;
                 break;
 
-              case 24:
-                _context2.prev = 24;
+              case 34:
+                _context2.prev = 34;
                 _context2.t0 = _context2['catch'](3);
 
                 this.isSyncing = false;
                 this.onChange();
                 throw _context2.t0;
 
-              case 29:
+              case 39:
                 return _context2.abrupt('return', this);
 
-              case 30:
+              case 40:
               case 'end':
                 return _context2.stop();
             }
           }
-        }, _callee2, this, [[3, 24]]);
+        }, _callee2, this, [[3, 34]]);
       }));
 
       function sync() {

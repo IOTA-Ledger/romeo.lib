@@ -32,10 +32,10 @@ class Page extends BasePage {
       const timestamp = await db.get(`lastsynced-${index}`);
       this.lastSynced = timestamp ? new Date(timestamp) : null;
     }
-    return await this.sync(force, priority);
+    return await this.sync(force, priority, true);
   }
 
-  async sync(force = false, priority) {
+  async sync(force = false, priority, initial) {
     const { db, index, isCurrent } = this.opts;
     if (!priority) {
       priority = index + 1;
@@ -43,6 +43,13 @@ class Page extends BasePage {
     if (!this.isSyncing) {
       try {
         this.isSyncing = true;
+        if (initial) {
+          await this.syncAddresses(priority, true);
+          await this.syncTransactions(priority, true);
+          await this.syncBalances(priority, true);
+          await this.syncSpent(priority, true);
+          this.onChange();
+        }
         await this.syncAddresses(priority, !force);
         // Auto-create a new unspent address
         if (isCurrent && !Object.values(this.addresses).find(a => !a.spent)) {

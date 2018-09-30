@@ -120,7 +120,8 @@ function createAPI({ path, password, provider, database, guard }) {
         if (cachedOnly && result && result.length) {
           onLive(null, result ? result : []);
         } else {
-          _getNewAddress(iota.api, guard, seed, 0, total, callback);
+          const index = (result && result.length) || 0;
+          _getNewAddress(iota.api, guard, seed, index, total, callback);
         }
       })
       .catch(error => {

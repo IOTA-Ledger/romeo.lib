@@ -22,7 +22,6 @@ class LedgerGuard extends BaseGuard {
         sequentialTransfers: true
       })
     );
-    this.opts = options;
 
     this.hwapp = hwapp;
     this.key = key;
