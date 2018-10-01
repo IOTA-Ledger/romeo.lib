@@ -140,7 +140,7 @@ function createAPI(_ref) {
 
     db.get('addresses-' + seed).then(function (result) {
       onCache(null, result ? result : []);
-      if (cachedOnly && result && result.length) {
+      if (cachedOnly) {
         onLive(null, result ? result : []);
       } else {
         var index = result && result.length || 0;

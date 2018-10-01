@@ -117,7 +117,7 @@ function createAPI({ path, password, provider, database, guard }) {
       .get(`addresses-${seed}`)
       .then(result => {
         onCache(null, result ? result : []);
-        if (cachedOnly && result && result.length) {
+        if (cachedOnly) {
           onLive(null, result ? result : []);
         } else {
           const index = (result && result.length) || 0;

@@ -24,6 +24,16 @@ class Page extends BasePage {
     super(opts);
     this.lastSynced = null;
     this.isSyncing = false;
+    this.loadPage(opts.index);
+  }
+
+  async loadPage(priority) {
+    await this.syncAddresses(priority, true);
+    return Promise.all([
+      this.syncTransactions(priority, true),
+      this.syncBalances(priority, true),
+      this.syncSpent(priority, true)
+    ]).then(() => this.onChange());
   }
 
   async init(force = false, priority) {
@@ -43,13 +53,6 @@ class Page extends BasePage {
     if (!this.isSyncing) {
       try {
         this.isSyncing = true;
-        if (initial) {
-          await this.syncAddresses(priority, true);
-          await this.syncTransactions(priority, true);
-          await this.syncBalances(priority, true);
-          await this.syncSpent(priority, true);
-          this.onChange();
-        }
         await this.syncAddresses(priority, !force);
         // Auto-create a new unspent address
         if (isCurrent && !Object.values(this.addresses).find(a => !a.spent)) {

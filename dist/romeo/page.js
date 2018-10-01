@@ -45,45 +45,29 @@ var Page = function (_BasePage) {
 
     _this.lastSynced = null;
     _this.isSyncing = false;
+    _this.loadPage(opts.index);
     return _this;
   }
 
   _createClass(Page, [{
-    key: 'init',
+    key: 'loadPage',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-        var priority = arguments[1];
-
-        var _opts, db, index, timestamp;
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(priority) {
+        var _this2 = this;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _opts = this.opts, db = _opts.db, index = _opts.index;
+                _context.next = 2;
+                return this.syncAddresses(priority, true);
 
-                if (!db) {
-                  _context.next = 6;
-                  break;
-                }
+              case 2:
+                return _context.abrupt('return', Promise.all([this.syncTransactions(priority, true), this.syncBalances(priority, true), this.syncSpent(priority, true)]).then(function () {
+                  return _this2.onChange();
+                }));
 
-                _context.next = 4;
-                return db.get('lastsynced-' + index);
-
-              case 4:
-                timestamp = _context.sent;
-
-                this.lastSynced = timestamp ? new Date(timestamp) : null;
-
-              case 6:
-                _context.next = 8;
-                return this.sync(force, priority, true);
-
-              case 8:
-                return _context.abrupt('return', _context.sent);
-
-              case 9:
+              case 3:
               case 'end':
                 return _context.stop();
             }
@@ -91,8 +75,57 @@ var Page = function (_BasePage) {
         }, _callee, this);
       }));
 
-      function init() {
+      function loadPage(_x) {
         return _ref.apply(this, arguments);
+      }
+
+      return loadPage;
+    }()
+  }, {
+    key: 'init',
+    value: function () {
+      var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+        var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var priority = arguments[1];
+
+        var _opts, db, index, timestamp;
+
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _opts = this.opts, db = _opts.db, index = _opts.index;
+
+                if (!db) {
+                  _context2.next = 6;
+                  break;
+                }
+
+                _context2.next = 4;
+                return db.get('lastsynced-' + index);
+
+              case 4:
+                timestamp = _context2.sent;
+
+                this.lastSynced = timestamp ? new Date(timestamp) : null;
+
+              case 6:
+                _context2.next = 8;
+                return this.sync(force, priority, true);
+
+              case 8:
+                return _context2.abrupt('return', _context2.sent);
+
+              case 9:
+              case 'end':
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
+
+      function init() {
+        return _ref2.apply(this, arguments);
       }
 
       return init;
@@ -100,16 +133,16 @@ var Page = function (_BasePage) {
   }, {
     key: 'sync',
     value: function () {
-      var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+      var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
         var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         var priority = arguments[1];
         var initial = arguments[2];
 
         var _opts2, db, index, isCurrent;
 
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context3.prev = _context3.next) {
               case 0:
                 _opts2 = this.opts, db = _opts2.db, index = _opts2.index, isCurrent = _opts2.isCurrent;
 
@@ -118,104 +151,79 @@ var Page = function (_BasePage) {
                 }
 
                 if (this.isSyncing) {
-                  _context2.next = 39;
+                  _context3.next = 29;
                   break;
                 }
 
-                _context2.prev = 3;
+                _context3.prev = 3;
 
                 this.isSyncing = true;
-
-                if (!initial) {
-                  _context2.next = 15;
-                  break;
-                }
-
-                _context2.next = 8;
-                return this.syncAddresses(priority, true);
-
-              case 8:
-                _context2.next = 10;
-                return this.syncTransactions(priority, true);
-
-              case 10:
-                _context2.next = 12;
-                return this.syncBalances(priority, true);
-
-              case 12:
-                _context2.next = 14;
-                return this.syncSpent(priority, true);
-
-              case 14:
-                this.onChange();
-
-              case 15:
-                _context2.next = 17;
+                _context3.next = 7;
                 return this.syncAddresses(priority, !force);
 
-              case 17:
+              case 7:
                 if (!(isCurrent && !Object.values(this.addresses).find(function (a) {
                   return !a.spent;
                 }))) {
-                  _context2.next = 20;
+                  _context3.next = 10;
                   break;
                 }
 
-                _context2.next = 20;
+                _context3.next = 10;
                 return this.getNewAddress();
 
-              case 20:
-                _context2.next = 22;
+              case 10:
+                _context3.next = 12;
                 return this.syncTransactions(priority, !force);
 
-              case 22:
-                _context2.next = 24;
+              case 12:
+                _context3.next = 14;
                 return this.syncBalances(priority, !force);
 
-              case 24:
-                _context2.next = 26;
+              case 14:
+                _context3.next = 16;
                 return this.syncSpent(priority, !force);
 
-              case 26:
+              case 16:
                 this.isSyncing = false;
                 this.lastSynced = isCurrent || force ? new Date() : this.lastSynced;
 
                 if (!db) {
-                  _context2.next = 32;
+                  _context3.next = 22;
                   break;
                 }
 
-                _context2.next = 31;
+                _context3.next = 21;
                 return db.put('lastsynced-' + index, this.lastSynced);
 
-              case 31:
+              case 21:
                 this.onChange();
 
-              case 32:
-                _context2.next = 39;
+              case 22:
+                _context3.next = 29;
                 break;
 
-              case 34:
-                _context2.prev = 34;
-                _context2.t0 = _context2['catch'](3);
+              case 24:
+                _context3.prev = 24;
+                _context3.t0 = _context3['catch'](3);
 
                 this.isSyncing = false;
                 this.onChange();
-                throw _context2.t0;
+                throw _context3.t0;
 
-              case 39:
-                return _context2.abrupt('return', this);
+              case 29:
+                return _context3.abrupt('return', this);
 
-              case 40:
+              case 30:
               case 'end':
-                return _context2.stop();
+                return _context3.stop();
             }
           }
-        }, _callee2, this, [[3, 34]]);
+        }, _callee3, this, [[3, 24]]);
       }));
 
       function sync() {
-        return _ref2.apply(this, arguments);
+        return _ref3.apply(this, arguments);
       }
 
       return sync;
@@ -308,22 +316,22 @@ var Page = function (_BasePage) {
   }, {
     key: 'getNewAddress',
     value: function getNewAddress() {
-      var _this2 = this;
+      var _this3 = this;
 
       var total = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
       return _get(Page.prototype.__proto__ || Object.getPrototypeOf(Page.prototype), 'getNewAddress', this).call(this, total, function (addresses) {
-        return _this2.syncTransactions(40, false, addresses);
+        return _this3.syncTransactions(40, false, addresses);
       });
     }
   }, {
     key: 'applyBalances',
     value: function applyBalances(addresses, balances) {
-      var _this3 = this;
+      var _this4 = this;
 
       addresses.forEach(function (address, i) {
-        if (_this3.addresses[address]) {
-          _this3.addresses[address].balance = balances[i];
+        if (_this4.addresses[address]) {
+          _this4.addresses[address].balance = balances[i];
         }
       });
       this.onChange();
@@ -331,11 +339,11 @@ var Page = function (_BasePage) {
   }, {
     key: 'applySpent',
     value: function applySpent(addresses, states) {
-      var _this4 = this;
+      var _this5 = this;
 
       addresses.forEach(function (address, i) {
-        if (_this4.addresses[address]) {
-          _this4.addresses[address].spent = states[i];
+        if (_this5.addresses[address]) {
+          _this5.addresses[address].spent = states[i];
         }
       });
       this.onChange();
@@ -357,7 +365,7 @@ var Page = function (_BasePage) {
   }, {
     key: 'syncBalances',
     value: function syncBalances(priority, cachedOnly) {
-      var _this5 = this;
+      var _this6 = this;
 
       var _opts4 = this.opts,
           iota = _opts4.iota,
@@ -372,35 +380,35 @@ var Page = function (_BasePage) {
           return new Promise(function (resolve, reject) {
             iota.api.ext.getBalances(addresses, IOTA_BALANCE_TRESHOLD, function (err, balances) {
               if (!err) {
-                _this5.applyBalances(addresses, balances);
+                _this6.applyBalances(addresses, balances);
               }
             }, function () {
-              var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(err, balances) {
-                return regeneratorRuntime.wrap(function _callee3$(_context3) {
+              var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(err, balances) {
+                return regeneratorRuntime.wrap(function _callee4$(_context4) {
                   while (1) {
-                    switch (_context3.prev = _context3.next) {
+                    switch (_context4.prev = _context4.next) {
                       case 0:
                         if (!err) {
-                          _context3.next = 2;
+                          _context4.next = 2;
                           break;
                         }
 
-                        return _context3.abrupt('return', reject(err));
+                        return _context4.abrupt('return', reject(err));
 
                       case 2:
-                        _this5.applyBalances(addresses, balances);
-                        resolve(_this5);
+                        _this6.applyBalances(addresses, balances);
+                        resolve(_this6);
 
                       case 4:
                       case 'end':
-                        return _context3.stop();
+                        return _context4.stop();
                     }
                   }
-                }, _callee3, _this5);
+                }, _callee4, _this6);
               }));
 
-              return function (_x5, _x6) {
-                return _ref3.apply(this, arguments);
+              return function (_x6, _x7) {
+                return _ref4.apply(this, arguments);
               };
             }(), cachedOnly);
           });
@@ -415,20 +423,20 @@ var Page = function (_BasePage) {
             job = _queue$add.job;
 
         job.on('finish', function (result) {
-          _this5.onChange();
+          _this6.onChange();
           resolve(result);
         });
         job.on('failed', function (err) {
-          _this5.log('Could not sync page balances', err);
+          _this6.log('Could not sync page balances', err);
           reject(err);
         });
-        _this5.onChange();
+        _this6.onChange();
       });
     }
   }, {
     key: 'syncSpent',
     value: function syncSpent(priority, cachedOnly) {
-      var _this6 = this;
+      var _this7 = this;
 
       var _opts5 = this.opts,
           iota = _opts5.iota,
@@ -443,35 +451,35 @@ var Page = function (_BasePage) {
           return new Promise(function (resolve, reject) {
             iota.api.ext.getSpent(addresses, function (err, states) {
               if (!err) {
-                _this6.applySpent(addresses, states);
+                _this7.applySpent(addresses, states);
               }
             }, function () {
-              var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(err, states) {
-                return regeneratorRuntime.wrap(function _callee4$(_context4) {
+              var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(err, states) {
+                return regeneratorRuntime.wrap(function _callee5$(_context5) {
                   while (1) {
-                    switch (_context4.prev = _context4.next) {
+                    switch (_context5.prev = _context5.next) {
                       case 0:
                         if (!err) {
-                          _context4.next = 2;
+                          _context5.next = 2;
                           break;
                         }
 
-                        return _context4.abrupt('return', reject(err));
+                        return _context5.abrupt('return', reject(err));
 
                       case 2:
-                        _this6.applySpent(addresses, states);
-                        resolve(_this6);
+                        _this7.applySpent(addresses, states);
+                        resolve(_this7);
 
                       case 4:
                       case 'end':
-                        return _context4.stop();
+                        return _context5.stop();
                     }
                   }
-                }, _callee4, _this6);
+                }, _callee5, _this7);
               }));
 
-              return function (_x7, _x8) {
-                return _ref4.apply(this, arguments);
+              return function (_x8, _x9) {
+                return _ref5.apply(this, arguments);
               };
             }(), cachedOnly);
           });
@@ -486,14 +494,14 @@ var Page = function (_BasePage) {
             job = _queue$add2.job;
 
         job.on('finish', function (result) {
-          _this6.onChange();
+          _this7.onChange();
           resolve(result);
         });
         job.on('failed', function (err) {
-          _this6.log('Could not sync page states', err);
+          _this7.log('Could not sync page states', err);
           reject(err);
         });
-        _this6.onChange();
+        _this7.onChange();
       });
     }
   }, {
@@ -501,7 +509,7 @@ var Page = function (_BasePage) {
     value: function syncTransactions() {
       var priority = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-      var _this7 = this;
+      var _this8 = this;
 
       var cachedOnly = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var addresses = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -514,39 +522,39 @@ var Page = function (_BasePage) {
 
       return new Promise(function (resolve, reject) {
         var transactionPromise = function transactionPromise() {
-          return Promise.all((addresses || Object.keys(_this7.addresses)).map(function (address) {
+          return Promise.all((addresses || Object.keys(_this8.addresses)).map(function (address) {
             return new Promise(function (resolve, reject) {
               iota.api.ext.getTransactionObjects(address, function (err, transactions) {
                 if (!err) {
-                  _this7.applyTransactions(address, transactions);
+                  _this8.applyTransactions(address, transactions);
                 }
               }, function () {
-                var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(err, transactions) {
-                  return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(err, transactions) {
+                  return regeneratorRuntime.wrap(function _callee6$(_context6) {
                     while (1) {
-                      switch (_context5.prev = _context5.next) {
+                      switch (_context6.prev = _context6.next) {
                         case 0:
                           if (!err) {
-                            _context5.next = 2;
+                            _context6.next = 2;
                             break;
                           }
 
-                          return _context5.abrupt('return', reject(err));
+                          return _context6.abrupt('return', reject(err));
 
                         case 2:
-                          _this7.applyTransactions(address, transactions);
-                          resolve(_this7);
+                          _this8.applyTransactions(address, transactions);
+                          resolve(_this8);
 
                         case 4:
                         case 'end':
-                          return _context5.stop();
+                          return _context6.stop();
                       }
                     }
-                  }, _callee5, _this7);
+                  }, _callee6, _this8);
                 }));
 
-                return function (_x12, _x13) {
-                  return _ref5.apply(this, arguments);
+                return function (_x13, _x14) {
+                  return _ref6.apply(this, arguments);
                 };
               }(), cachedOnly);
             });
@@ -562,14 +570,14 @@ var Page = function (_BasePage) {
             job = _queue$add3.job;
 
         job.on('finish', function (result) {
-          _this7.onChange();
+          _this8.onChange();
           resolve(result);
         });
         job.on('failed', function (err) {
-          _this7.log('Could not sync page transactions', err);
+          _this8.log('Could not sync page transactions', err);
           reject(err);
         });
-        _this7.onChange();
+        _this8.onChange();
       });
     }
   }]);
