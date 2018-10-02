@@ -111,7 +111,7 @@ var Page = function (_BasePage) {
 
               case 6:
                 _context2.next = 8;
-                return this.sync(force, priority, true);
+                return this.sync(force, priority);
 
               case 8:
                 return _context2.abrupt('return', _context2.sent);
@@ -136,7 +136,6 @@ var Page = function (_BasePage) {
       var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
         var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         var priority = arguments[1];
-        var initial = arguments[2];
 
         var _opts2, db, index, isCurrent;
 
@@ -338,7 +337,7 @@ var Page = function (_BasePage) {
                 }
 
                 _context4.next = 3;
-                return this.opts.guard.displayAddress(keyIndex);
+                return this.opts.guard.displayAddress(this.opts.index, keyIndex);
 
               case 3:
               case 'end':

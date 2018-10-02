@@ -132,11 +132,12 @@ function createAPI(_ref) {
     var cachedOnly = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     var total = arguments[4];
 
+    var cached = [];
     var callback = function callback(error, results) {
       if (error) {
         return onLive(error, null);
       }
-      var addresses = results.slice(0, -1);
+      var addresses = cached.concat(results.slice(0, -1));
       db.put('addresses-' + seed, addresses).then(function () {
         return onLive(null, addresses);
       });
@@ -147,7 +148,8 @@ function createAPI(_ref) {
       if (cachedOnly) {
         onLive(null, result ? result : []);
       } else {
-        var index = result && result.length || 0;
+        cached = result ? result : [];
+        var index = result && result.length + 1 || 0;
         _getNewAddress(iota.api, guard, seed, index, total, callback);
       }
     }).catch(function (error) {
@@ -289,7 +291,9 @@ function _getNewAddress(api, guard, seedOrPageIndex, index, total, callback) {
   if (!guard) {
     api.getNewAddress(seedOrPageIndex, { returnAll: returnAll, total: total }, callback);
   } else {
-    var getter = seedOrPageIndex < 0 ? guard.getPages.bind(guard) : function (i, t) {
+    var getter = seedOrPageIndex < 0 ? function (i, t) {
+      return guard.getPages(i, t);
+    } : function (i, t) {
       return guard.getAddresses(seedOrPageIndex, i, t);
     };
     _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -430,7 +434,7 @@ function _sendTransfer(api, guard, seedOrPageIndex, depth, minWeightMagnitude, t
             _context2.next = 11;
             return function () {
               return new Promise(function (resolve) {
-                _getNewAddress(api, guard, seedOrPageIndex, 0, null, function (error, address, addressIndex) {
+                _getNewAddress(api, guard, seedOrPageIndex, index, null, function (error, address, addressIndex) {
                   if (error) throw error;
                   index = addressIndex;
                   resolve(address);

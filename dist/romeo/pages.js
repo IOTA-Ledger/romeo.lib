@@ -73,6 +73,18 @@ var Pages = function (_BasePage) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
+                if (!(!addresses || !addresses.length)) {
+                  _context.next = 4;
+                  break;
+                }
+
+                _context.next = 3;
+                return this.getNewPage();
+
+              case 3:
+                return _context.abrupt('return', _context.sent);
+
+              case 4:
                 _opts = this.opts, queue = _opts.queue, iota = _opts.iota, db = _opts.db, guard = _opts.guard;
                 startIndex = Object.keys(this.pages).filter(function (e) {
                   return !addresses.includes(e);
@@ -119,22 +131,22 @@ var Pages = function (_BasePage) {
                 })[0].page.setCurrent(true);
 
                 if (!currentPage) {
-                  _context.next = 11;
+                  _context.next = 15;
                   break;
                 }
 
-                _context.next = 10;
+                _context.next = 14;
                 return currentPage.init(true, 6000);
 
-              case 10:
+              case 14:
                 Promise.all(otherPages.map(function (p) {
                   return p.init();
                 }));
 
-              case 11:
+              case 15:
                 this.onChange();
 
-              case 12:
+              case 16:
               case 'end':
                 return _context.stop();
             }

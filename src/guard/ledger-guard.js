@@ -76,6 +76,35 @@ class LedgerGuard extends BaseGuard {
     return this.key;
   }
 
+  async displayAddress(pageIndex, index, priority) {
+    const promiseFactory = () =>
+      new Promise(async (resolve, reject) => {
+        try {
+          await this._setActivePage(pageIndex);
+          const { account } = this.opts;
+          // get the corresponding address derivation
+          const { path, keyIndex } =
+            this.activePageIndex < 0
+              ? PAGE_ADDRESS_DERIVATION(account, index)
+              : ADDRESS_DERIVATION(account, this.activePageIndex, index);
+
+          await this._setActiveSeed(path);
+          resolve(await this.hwapp.getAddress(keyIndex, { display: true }));
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+    return new Promise((resolve, reject) => {
+      const job = this.queue.addJob(promiseFactory, priority, {
+        page: pageIndex,
+        type: 'DISPLAY_ADDRESS'
+      });
+      job.on('finish', resolve);
+      job.on('failed', reject);
+    });
+  }
+
   ///////// Private methods should not be called directly! /////////
 
   async _getPages(pageIndex, total) {
@@ -152,18 +181,6 @@ class LedgerGuard extends BaseGuard {
       console.log('getAddress; index=%i, key=%s', keyIndex, address);
     }
     return address;
-  }
-
-  async displayAddress(index) {
-    const { account } = this.opts;
-    // get the corresponding address derivation
-    const { path, keyIndex } =
-      this.activePageIndex < 0
-        ? PAGE_ADDRESS_DERIVATION(account, index)
-        : ADDRESS_DERIVATION(account, this.activePageIndex, index);
-
-    await this._setActiveSeed(path);
-    await this.hwapp.getAddress(keyIndex, { display: true });
   }
 
   static async _checkVersion(hwapp) {

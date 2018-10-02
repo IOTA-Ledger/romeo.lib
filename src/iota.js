@@ -107,11 +107,12 @@ function createAPI({ path, password, provider, database, guard }) {
   }
 
   function getAddresses(seed, onCache, onLive, cachedOnly = false, total) {
+    let cached = [];
     const callback = (error, results) => {
       if (error) {
         return onLive(error, null);
       }
-      const addresses = results.slice(0, -1);
+      const addresses = cached.concat(results.slice(0, -1));
       db
         .put(`addresses-${seed}`, addresses)
         .then(() => onLive(null, addresses));
@@ -124,7 +125,8 @@ function createAPI({ path, password, provider, database, guard }) {
         if (cachedOnly) {
           onLive(null, result ? result : []);
         } else {
-          const index = (result && result.length) || 0;
+          cached = result ? result : [];
+          const index = (result && result.length + 1) || 0;
           _getNewAddress(iota.api, guard, seed, index, total, callback);
         }
       })
@@ -285,7 +287,7 @@ function _getNewAddress(
   } else {
     const getter =
       seedOrPageIndex < 0
-        ? guard.getPages.bind(guard)
+        ? (i, t) => guard.getPages(i, t)
         : (i, t) => guard.getAddresses(seedOrPageIndex, i, t);
     (async () => {
       const allAddresses = [];
@@ -402,7 +404,7 @@ function _sendTransfer(
                   api,
                   guard,
                   seedOrPageIndex,
-                  0,
+                  index,
                   null,
                   (error, address, addressIndex) => {
                     if (error) throw error;

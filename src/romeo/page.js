@@ -42,10 +42,10 @@ class Page extends BasePage {
       const timestamp = await db.get(`lastsynced-${index}`);
       this.lastSynced = timestamp ? new Date(timestamp) : null;
     }
-    return await this.sync(force, priority, true);
+    return await this.sync(force, priority);
   }
 
-  async sync(force = false, priority, initial) {
+  async sync(force = false, priority) {
     const { db, index, isCurrent } = this.opts;
     if (!priority) {
       priority = index + 1;
@@ -146,7 +146,7 @@ class Page extends BasePage {
 
   async displayAddress(keyIndex) {
     if (this.opts.guard.displayAddress) {
-      await this.opts.guard.displayAddress(keyIndex);
+      await this.opts.guard.displayAddress(this.opts.index, keyIndex);
     }
   }
 

@@ -39,6 +39,10 @@ class Pages extends BasePage {
   }
 
   async applyAddresses(addresses) {
+    if (!addresses || !addresses.length) {
+      return await this.getNewPage();
+    }
+
     const { queue, iota, db, guard } = this.opts;
     const startIndex = Object.keys(this.pages).filter(
       e => !addresses.includes(e)
