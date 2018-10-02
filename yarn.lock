@@ -2639,6 +2639,13 @@ invariant@^2.2.2:
   dependencies:
     loose-envify "^1.0.0"
 
+iota.lib.js.powsrvio@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/iota.lib.js.powsrvio/-/iota.lib.js.powsrvio-0.0.1.tgz#2e40da8f65dfda70f83faf0e799e1ffa814b87b1"
+  dependencies:
+    iota.lib.js "^0.5.0"
+    node-fetch "^2.0.0"
+
 iota.lib.js@^0.4.7:
   version "0.4.7"
   resolved "https://registry.yarnpkg.com/iota.lib.js/-/iota.lib.js-0.4.7.tgz#c2af1a7886b8b0e239a4b54b5caa9dd239c2d7eb"
@@ -3500,6 +3507,10 @@ node-abi@^2.2.0:
 node-eta@^0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/node-eta/-/node-eta-0.9.0.tgz#9fb0b099bcd2a021940e603c64254dc003d9a7a8"
+
+node-fetch@^2.0.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.2.0.tgz#4ee79bde909262f9775f731e3656d0db55ced5b5"
 
 node-forge@^0.7.1:
   version "0.7.4"

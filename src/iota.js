@@ -1,4 +1,5 @@
 const IOTA = require('iota.lib.js');
+const usePowSrvIO = require('iota.lib.js.powsrvio');
 const async = require('async');
 const { Database } = require('./db');
 const { IOTA_API_ENDPOINT } = require('./config');
@@ -6,6 +7,9 @@ const { IOTA_API_ENDPOINT } = require('./config');
 function createAPI({ path, password, provider, database, guard }) {
   const db = database || new Database({ path, password });
   const iota = new IOTA({ provider: provider || IOTA_API_ENDPOINT });
+
+  usePowSrvIO(iota, 5000, null);
+
   const getTrytes = iota.api.getTrytes.bind(iota.api);
 
   iota.api.getTrytes = function(hashes, callback) {
