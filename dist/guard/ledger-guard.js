@@ -323,45 +323,28 @@ var LedgerGuard = function (_BaseGuard) {
 
       return _getGenericAddress;
     }()
-  }], [{
-    key: 'build',
+  }, {
+    key: 'displayAddress',
     value: function () {
-      var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(options) {
-        var opts, transport, hwapp, _KEY_ADDRESS_DERIVATI, path, keyIndex, keyAddress;
+      var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(index) {
+        var account, _ref8, path, keyIndex;
 
         return regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
-                opts = Object.assign({}, DEFAULT_OPTIONS, options);
-                _context6.next = 3;
-                return Transport.create();
+                account = this.opts.account;
+                // get the corresponding address derivation
 
-              case 3:
-                transport = _context6.sent;
+                _ref8 = this.activePageIndex < 0 ? PAGE_ADDRESS_DERIVATION(account, index) : ADDRESS_DERIVATION(account, this.activePageIndex, index), path = _ref8.path, keyIndex = _ref8.keyIndex;
+                _context6.next = 4;
+                return this._setActiveSeed(path);
 
-                if (opts.debug) {
-                  transport.setDebugMode(true);
-                }
+              case 4:
+                _context6.next = 6;
+                return this.hwapp.getAddress(keyIndex, { display: true });
 
-                hwapp = new AppIota(transport);
-                _context6.next = 8;
-                return LedgerGuard._checkVersion(hwapp);
-
-              case 8:
-                _KEY_ADDRESS_DERIVATI = KEY_ADDRESS_DERIVATION(opts.account), path = _KEY_ADDRESS_DERIVATI.path, keyIndex = _KEY_ADDRESS_DERIVATI.keyIndex;
-                _context6.next = 11;
-                return hwapp.setActiveSeed(path, 1);
-
-              case 11:
-                _context6.next = 13;
-                return hwapp.getAddress(keyIndex);
-
-              case 13:
-                keyAddress = _context6.sent;
-                return _context6.abrupt('return', new LedgerGuard(hwapp, keyAddress.substr(0, 32), opts));
-
-              case 15:
+              case 6:
               case 'end':
                 return _context6.stop();
             }
@@ -369,8 +352,60 @@ var LedgerGuard = function (_BaseGuard) {
         }, _callee6, this);
       }));
 
-      function build(_x10) {
+      function displayAddress(_x10) {
         return _ref7.apply(this, arguments);
+      }
+
+      return displayAddress;
+    }()
+  }], [{
+    key: 'build',
+    value: function () {
+      var _ref9 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(options) {
+        var opts, transport, hwapp, _KEY_ADDRESS_DERIVATI, path, keyIndex, keyAddress;
+
+        return regeneratorRuntime.wrap(function _callee7$(_context7) {
+          while (1) {
+            switch (_context7.prev = _context7.next) {
+              case 0:
+                opts = Object.assign({}, DEFAULT_OPTIONS, options);
+                _context7.next = 3;
+                return Transport.create();
+
+              case 3:
+                transport = _context7.sent;
+
+                if (opts.debug) {
+                  transport.setDebugMode(true);
+                }
+
+                hwapp = new AppIota(transport);
+                _context7.next = 8;
+                return LedgerGuard._checkVersion(hwapp);
+
+              case 8:
+                _KEY_ADDRESS_DERIVATI = KEY_ADDRESS_DERIVATION(opts.account), path = _KEY_ADDRESS_DERIVATI.path, keyIndex = _KEY_ADDRESS_DERIVATI.keyIndex;
+                _context7.next = 11;
+                return hwapp.setActiveSeed(path, 1);
+
+              case 11:
+                _context7.next = 13;
+                return hwapp.getAddress(keyIndex);
+
+              case 13:
+                keyAddress = _context7.sent;
+                return _context7.abrupt('return', new LedgerGuard(hwapp, keyAddress.substr(0, 32), opts));
+
+              case 15:
+              case 'end':
+                return _context7.stop();
+            }
+          }
+        }, _callee7, this);
+      }));
+
+      function build(_x11) {
+        return _ref9.apply(this, arguments);
       }
 
       return build;
@@ -378,22 +413,22 @@ var LedgerGuard = function (_BaseGuard) {
   }, {
     key: '_checkVersion',
     value: function () {
-      var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(hwapp) {
+      var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(hwapp) {
         var appVersion, message;
-        return regeneratorRuntime.wrap(function _callee7$(_context7) {
+        return regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
-            switch (_context7.prev = _context7.next) {
+            switch (_context8.prev = _context8.next) {
               case 0:
-                _context7.t0 = semver;
-                _context7.next = 3;
+                _context8.t0 = semver;
+                _context8.next = 3;
                 return hwapp.getAppVersion();
 
               case 3:
-                _context7.t1 = _context7.sent;
-                appVersion = _context7.t0.clean.call(_context7.t0, _context7.t1);
+                _context8.t1 = _context8.sent;
+                appVersion = _context8.t0.clean.call(_context8.t0, _context8.t1);
 
                 if (semver.satisfies(appVersion, APP_VERSION_RANGE)) {
-                  _context7.next = 8;
+                  _context8.next = 8;
                   break;
                 }
 
@@ -402,14 +437,14 @@ var LedgerGuard = function (_BaseGuard) {
 
               case 8:
               case 'end':
-                return _context7.stop();
+                return _context8.stop();
             }
           }
-        }, _callee7, this);
+        }, _callee8, this);
       }));
 
-      function _checkVersion(_x11) {
-        return _ref8.apply(this, arguments);
+      function _checkVersion(_x12) {
+        return _ref10.apply(this, arguments);
       }
 
       return _checkVersion;

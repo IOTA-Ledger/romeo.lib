@@ -154,6 +154,18 @@ class LedgerGuard extends BaseGuard {
     return address;
   }
 
+  async displayAddress(index) {
+    const { account } = this.opts;
+    // get the corresponding address derivation
+    const { path, keyIndex } =
+      this.activePageIndex < 0
+        ? PAGE_ADDRESS_DERIVATION(account, index)
+        : ADDRESS_DERIVATION(account, this.activePageIndex, index);
+
+    await this._setActiveSeed(path);
+    await this.hwapp.getAddress(keyIndex, { display: true });
+  }
+
   static async _checkVersion(hwapp) {
     const appVersion = semver.clean(await hwapp.getAppVersion());
     if (!semver.satisfies(appVersion, APP_VERSION_RANGE)) {

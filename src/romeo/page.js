@@ -144,6 +144,12 @@ class Page extends BasePage {
     );
   }
 
+  async displayAddress(keyIndex) {
+    if (this.opts.guard.displayAddress) {
+      await this.opts.guard.displayAddress(keyIndex);
+    }
+  }
+
   applyBalances(addresses, balances) {
     addresses.forEach((address, i) => {
       if (this.addresses[address]) {
