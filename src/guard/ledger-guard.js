@@ -175,8 +175,12 @@ class LedgerGuard extends BaseGuard {
         ? PAGE_ADDRESS_DERIVATION(account, index)
         : ADDRESS_DERIVATION(account, this.activePageIndex, index);
 
+    console.log(
+      `_getGenericAddress: index: ${index}; path: ${path}, keyIndex: ${keyIndex}, account: ${account}`
+    );
     await this._setActiveSeed(path);
     const address = await this.hwapp.getAddress(keyIndex);
+    console.log(`_getGenericAddress: address: ${address};`);
     if (debug) {
       console.log('getAddress; index=%i, key=%s', keyIndex, address);
     }
