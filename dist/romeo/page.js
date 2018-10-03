@@ -102,7 +102,7 @@ var Page = function (_BasePage) {
                 }
 
                 _context2.next = 4;
-                return db.get('lastsynced-' + index);
+                return db.get('lastsynced-' + this.opts.guard.opts.account + '-' + index);
 
               case 4:
                 timestamp = _context2.sent;
@@ -193,7 +193,7 @@ var Page = function (_BasePage) {
                 }
 
                 _context3.next = 21;
-                return db.put('lastsynced-' + index, this.lastSynced);
+                return db.put('lastsynced-' + this.opts.guard.opts.account + '-' + index, this.lastSynced);
 
               case 21:
                 this.onChange();

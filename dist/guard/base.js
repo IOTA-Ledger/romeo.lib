@@ -17,7 +17,8 @@ var createAPI = require('../iota');
 var DEFAULT_OPTIONS = {
   concurrent: 1,
   name: 'simple',
-  sequentialTransfers: false
+  sequentialTransfers: false,
+  account: 0
 };
 
 var BaseGuard = function () {

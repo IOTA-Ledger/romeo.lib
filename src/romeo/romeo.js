@@ -6,7 +6,8 @@ const { Pages } = require('./pages');
 const DEFAULT_OPTIONS = {
   syncInterval: 60000,
   dbPath: 'romeo',
-  guard: null
+  guard: null,
+  account: 0
 };
 
 class Romeo extends Base {
@@ -28,7 +29,7 @@ class Romeo extends Base {
     this.addingPage = false;
     this.opts = opts;
     this.db = new Database({
-      path: opts.dbPath,
+      path: `${opts.dbPath}-account-${this.guard.opts.account}`,
       password: this.guard.getSymmetricKey()
     });
     this.iota = this.guard.setupIOTA({ database: this.db });

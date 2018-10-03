@@ -33,6 +33,8 @@ class Pages extends BasePage {
     if (!Object.keys(this.addresses).length) {
       await this.getNewPage(null);
     }
+    // Just in case it is a new sync...
+    this.syncAddresses(priority, true);
     return this;
   }
 

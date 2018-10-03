@@ -74,9 +74,11 @@ var Pages = function (_BasePage) {
                 return this.getNewPage(null);
 
               case 8:
+                // Just in case it is a new sync...
+                this.syncAddresses(priority, true);
                 return _context.abrupt('return', this);
 
-              case 9:
+              case 10:
               case 'end':
                 return _context.stop();
             }

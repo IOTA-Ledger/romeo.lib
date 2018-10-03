@@ -39,7 +39,9 @@ class Page extends BasePage {
   async init(force = false, priority) {
     const { db, index } = this.opts;
     if (db) {
-      const timestamp = await db.get(`lastsynced-${index}`);
+      const timestamp = await db.get(
+        `lastsynced-${this.opts.guard.opts.account}-${index}`
+      );
       this.lastSynced = timestamp ? new Date(timestamp) : null;
     }
     return await this.sync(force, priority);
@@ -64,7 +66,10 @@ class Page extends BasePage {
         this.isSyncing = false;
         this.lastSynced = isCurrent || force ? new Date() : this.lastSynced;
         if (db) {
-          await db.put(`lastsynced-${index}`, this.lastSynced);
+          await db.put(
+            `lastsynced-${this.opts.guard.opts.account}-${index}`,
+            this.lastSynced
+          );
           this.onChange();
         }
       } catch (e) {

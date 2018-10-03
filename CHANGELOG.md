@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.5.0] - 2018-10-03
+
+### Added
+
+* Multi-account support for Ledger
+
 ## [0.4.5] - 2018-10-03
 
 ### Changed

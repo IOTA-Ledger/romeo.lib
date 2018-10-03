@@ -21,6 +21,7 @@ function createAPI(_ref) {
 
   var db = database || new Database({ path: path, password: password });
   var iota = new IOTA({ provider: provider || IOTA_API_ENDPOINT });
+  var account = guard.opts.account;
 
   usePowSrvIO(iota, 5000, null);
 
@@ -29,7 +30,7 @@ function createAPI(_ref) {
   iota.api.getTrytes = function (hashes, callback) {
     // First, get trytes from db
     db.getMany(hashes.map(function (h) {
-      return 'tryte-' + h;
+      return 'tryte-' + account + '-' + h;
     })).then(function (result) {
       // See what we don't have
       var requestHashes = result.map(function (r, i) {
@@ -46,7 +47,7 @@ function createAPI(_ref) {
           }
           // Save all returned hashes
           Promise.all(trytes.map(function (tryte, i) {
-            return db.put('tryte-' + requestHashes[i], tryte);
+            return db.put('tryte-' + account + '-' + requestHashes[i], tryte);
           })).then(function () {
             // Mixin new returned trytes to previous results:
             callback(null, result.map(function (r) {
@@ -69,7 +70,7 @@ function createAPI(_ref) {
         return onLive(error, null);
       }
       Promise.all(addresses.map(function (address, i) {
-        return db.put('balance-' + address, results.balances[i]);
+        return db.put('balance-' + account + '-' + address, results.balances[i]);
       })).then(function () {
         return onLive(null, results.balances.map(function (b) {
           return parseInt(b);
@@ -78,7 +79,7 @@ function createAPI(_ref) {
     };
 
     db.getMany(addresses.map(function (address) {
-      return 'balance-' + address;
+      return 'balance-' + account + '-' + address;
     })).then(function (result) {
       var balances = result.map(function (r) {
         return parseInt(r || 0);
@@ -103,14 +104,14 @@ function createAPI(_ref) {
         return onLive(error, null);
       }
       Promise.all(addresses.map(function (address, i) {
-        return db.put('spent-' + address, results[i]);
+        return db.put('spent-' + account + '-' + address, results[i]);
       })).then(function () {
         return onLive(null, results);
       });
     };
 
     db.getMany(addresses.map(function (address) {
-      return 'spent-' + address;
+      return 'spent-' + account + '-' + address;
     })).then(function (result) {
       onCache(null, result);
       if (cachedOnly) {
@@ -125,7 +126,7 @@ function createAPI(_ref) {
   }
 
   function setAddresses(seed, addresses) {
-    return db.put('addresses-' + seed, addresses);
+    return db.put('addresses-' + account + '-' + seed, addresses);
   }
 
   function getAddresses(seed, onCache, onLive) {
@@ -138,12 +139,12 @@ function createAPI(_ref) {
         return onLive(error, null);
       }
       var addresses = cached.concat(results.slice(0, -1));
-      db.put('addresses-' + seed, addresses).then(function () {
+      db.put('addresses-' + account + '-' + seed, addresses).then(function () {
         return onLive(null, addresses);
       });
     };
 
-    db.get('addresses-' + seed).then(function (result) {
+    db.get('addresses-' + account + '-' + seed).then(function (result) {
       onCache(null, result ? result : []);
       if (cachedOnly) {
         onLive(null, result ? result : []);
@@ -164,8 +165,8 @@ function createAPI(_ref) {
       if (error) {
         return onLive(error, null);
       }
-      db.put('transactions-' + address, hashes).then(function () {
-        return db.put('inclusions-' + address, inclusions);
+      db.put('transactions-' + account + '-' + address, hashes).then(function () {
+        return db.put('inclusions-' + account + '-' + address, inclusions);
       }).then(function () {
         return onLive(null, { hashes: hashes, inclusions: inclusions });
       });
@@ -192,9 +193,9 @@ function createAPI(_ref) {
       findTransactions();
     };
 
-    db.get('transactions-' + address).then(function (hashes) {
+    db.get('transactions-' + account + '-' + address).then(function (hashes) {
       hashes = hashes ? hashes : [];
-      return db.get('inclusions-' + address).then(function (inclusions) {
+      return db.get('inclusions-' + account + '-' + address).then(function (inclusions) {
         var result = {
           hashes: hashes,
           inclusions: inclusions || hashes.map(function () {

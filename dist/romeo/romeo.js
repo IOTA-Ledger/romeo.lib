@@ -26,7 +26,8 @@ var _require3 = require('./pages'),
 var DEFAULT_OPTIONS = {
   syncInterval: 60000,
   dbPath: 'romeo',
-  guard: null
+  guard: null,
+  account: 0
 };
 
 var Romeo = function (_Base) {
@@ -49,7 +50,7 @@ var Romeo = function (_Base) {
     _this.addingPage = false;
     _this.opts = opts;
     _this.db = new Database({
-      path: opts.dbPath,
+      path: opts.dbPath + '-account-' + _this.guard.opts.account,
       password: _this.guard.getSymmetricKey()
     });
     _this.iota = _this.guard.setupIOTA({ database: _this.db });

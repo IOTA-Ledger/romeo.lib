@@ -7,6 +7,7 @@ const { IOTA_API_ENDPOINT } = require('./config');
 function createAPI({ path, password, provider, database, guard }) {
   const db = database || new Database({ path, password });
   const iota = new IOTA({ provider: provider || IOTA_API_ENDPOINT });
+  const account = guard.opts.account;
 
   usePowSrvIO(iota, 5000, null);
 
@@ -14,7 +15,7 @@ function createAPI({ path, password, provider, database, guard }) {
 
   iota.api.getTrytes = function(hashes, callback) {
     // First, get trytes from db
-    db.getMany(hashes.map(h => `tryte-${h}`)).then(result => {
+    db.getMany(hashes.map(h => `tryte-${account}-${h}`)).then(result => {
       // See what we don't have
       const requestHashes = result
         .map((r, i) => (r ? null : hashes[i]))
@@ -28,7 +29,9 @@ function createAPI({ path, password, provider, database, guard }) {
           }
           // Save all returned hashes
           Promise.all(
-            trytes.map((tryte, i) => db.put(`tryte-${requestHashes[i]}`, tryte))
+            trytes.map((tryte, i) =>
+              db.put(`tryte-${account}-${requestHashes[i]}`, tryte)
+            )
           ).then(() => {
             // Mixin new returned trytes to previous results:
             callback(null, result.map(r => r || trytes.splice(0, 1)[0]));
@@ -54,13 +57,13 @@ function createAPI({ path, password, provider, database, guard }) {
       }
       Promise.all(
         addresses.map((address, i) =>
-          db.put(`balance-${address}`, results.balances[i])
+          db.put(`balance-${account}-${address}`, results.balances[i])
         )
       ).then(() => onLive(null, results.balances.map(b => parseInt(b))));
     };
 
     db
-      .getMany(addresses.map(address => `balance-${address}`))
+      .getMany(addresses.map(address => `balance-${account}-${address}`))
       .then(result => {
         const balances = result.map(r => parseInt(r || 0));
         onCache(null, balances);
@@ -82,12 +85,14 @@ function createAPI({ path, password, provider, database, guard }) {
         return onLive(error, null);
       }
       Promise.all(
-        addresses.map((address, i) => db.put(`spent-${address}`, results[i]))
+        addresses.map((address, i) =>
+          db.put(`spent-${account}-${address}`, results[i])
+        )
       ).then(() => onLive(null, results));
     };
 
     db
-      .getMany(addresses.map(address => `spent-${address}`))
+      .getMany(addresses.map(address => `spent-${account}-${address}`))
       .then(result => {
         onCache(null, result);
         if (cachedOnly) {
@@ -103,7 +108,7 @@ function createAPI({ path, password, provider, database, guard }) {
   }
 
   function setAddresses(seed, addresses) {
-    return db.put(`addresses-${seed}`, addresses);
+    return db.put(`addresses-${account}-${seed}`, addresses);
   }
 
   function getAddresses(seed, onCache, onLive, cachedOnly = false, total) {
@@ -114,12 +119,12 @@ function createAPI({ path, password, provider, database, guard }) {
       }
       const addresses = cached.concat(results.slice(0, -1));
       db
-        .put(`addresses-${seed}`, addresses)
+        .put(`addresses-${account}-${seed}`, addresses)
         .then(() => onLive(null, addresses));
     };
 
     db
-      .get(`addresses-${seed}`)
+      .get(`addresses-${account}-${seed}`)
       .then(result => {
         onCache(null, result ? result : []);
         if (cachedOnly) {
@@ -149,8 +154,8 @@ function createAPI({ path, password, provider, database, guard }) {
         return onLive(error, null);
       }
       db
-        .put(`transactions-${address}`, hashes)
-        .then(() => db.put(`inclusions-${address}`, inclusions))
+        .put(`transactions-${account}-${address}`, hashes)
+        .then(() => db.put(`inclusions-${account}-${address}`, inclusions))
         .then(() => onLive(null, { hashes, inclusions }));
     };
 
@@ -174,11 +179,11 @@ function createAPI({ path, password, provider, database, guard }) {
     };
 
     db
-      .get(`transactions-${address}`)
+      .get(`transactions-${account}-${address}`)
       .then(hashes => {
         hashes = hashes ? hashes : [];
         return db
-          .get(`inclusions-${address}`)
+          .get(`inclusions-${account}-${address}`)
           .then(inclusions => {
             const result = {
               hashes,
