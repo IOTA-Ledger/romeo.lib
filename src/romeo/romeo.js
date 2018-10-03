@@ -25,6 +25,7 @@ class Romeo extends Base {
     this.ready = false;
     this.isOnline = 1;
     this.checkingOnline = false;
+    this.addingPage = false;
     this.opts = opts;
     this.db = new Database({
       path: opts.dbPath,
@@ -84,7 +85,8 @@ class Romeo extends Base {
       isOnline,
       checkingOnline,
       provider: this.iota.api.ext.provider,
-      ready
+      ready,
+      addingPage: this.addingPage
     };
   }
 
@@ -108,49 +110,59 @@ class Romeo extends Base {
   }
 
   async newPage(opts = {}, onCreate) {
-    const { preventRetries, sourcePage, includeReuse = false } = opts;
-    const currentPage = sourcePage || this.pages.getCurrent();
+    this.addingPage = true;
+    try {
+      const { preventRetries, sourcePage, includeReuse = false } = opts;
+      const currentPage = sourcePage || this.pages.getCurrent();
 
-    const newPage = this.pages.getByAddress((await this.pages.getNewPage())[0])
-      .page;
-    onCreate && onCreate(newPage);
+      const newPage = this.pages.getByAddress(
+        (await this.pages.getNewPage())[0]
+      ).page;
 
-    if (!currentPage.isSynced()) {
-      await currentPage.sync();
-    }
-    const address = newPage.getCurrentAddress().address;
-    const inputs = currentPage.getInputs(includeReuse);
-
-    if (this.guard.opts.sequentialTransfers) {
-      for (let input of inputs) {
-        const value = input.balance;
-        await currentPage.sendTransfers(
-          [{ address, value }],
-          [input],
-          'Moving funds to the new page sequentially.',
-          'Failed moving all or some funds!',
-          null,
-          preventRetries
-        );
+      if (!currentPage.isSynced()) {
+        await currentPage.sync();
       }
-    } else {
-      const value = inputs.reduce((t, i) => t + i.balance, 0);
-      if (value > 0) {
-        await currentPage.sendTransfers(
-          [{ address, value }],
-          inputs,
-          'Moving funds to the new page',
-          'Failed moving funds!',
-          null,
-          preventRetries
-        );
-      }
-    }
+      const address = newPage.getCurrentAddress().address;
+      const inputs = currentPage.getInputs(includeReuse);
+      const tag = '99ROMEO9NEW9PAGE9TRANSFER99';
 
-    currentPage.syncTransactions();
-    newPage.syncTransactions();
-    this.onChange();
-    return newPage;
+      if (this.guard.opts.sequentialTransfers) {
+        for (let input of inputs) {
+          const value = input.balance;
+          await currentPage.sendTransfers(
+            [{ address, value, tag }],
+            [input],
+            'Moving funds to the new page sequentially.',
+            'Failed moving all or some funds!',
+            null,
+            preventRetries
+          );
+        }
+      } else {
+        const value = inputs.reduce((t, i) => t + i.balance, 0);
+        if (value > 0) {
+          await currentPage.sendTransfers(
+            [{ address, value, tag }],
+            inputs,
+            'Moving funds to the new page',
+            'Failed moving funds!',
+            null,
+            preventRetries
+          );
+        }
+      }
+
+      newPage.syncTransactions();
+      onCreate && onCreate(newPage);
+      this.addingPage = false;
+
+      currentPage.syncTransactions();
+      this.onChange();
+      return newPage;
+    } catch (e) {
+      this.addingPage = false;
+      throw e;
+    }
   }
 
   onChange() {

@@ -126,8 +126,15 @@ function createAPI({ path, password, provider, database, guard }) {
           onLive(null, result ? result : []);
         } else {
           cached = result ? result : [];
-          const index = (result && result.length + 1) || 0;
-          _getNewAddress(iota.api, guard, seed, index, total, callback, true);
+          _getNewAddress(
+            iota.api,
+            guard,
+            seed,
+            cached.length,
+            total,
+            callback,
+            true
+          );
         }
       })
       .catch(error => {

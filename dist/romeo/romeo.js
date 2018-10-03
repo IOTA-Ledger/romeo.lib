@@ -46,6 +46,7 @@ var Romeo = function (_Base) {
     _this.ready = false;
     _this.isOnline = 1;
     _this.checkingOnline = false;
+    _this.addingPage = false;
     _this.opts = opts;
     _this.db = new Database({
       path: opts.dbPath,
@@ -176,7 +177,8 @@ var Romeo = function (_Base) {
         isOnline: isOnline,
         checkingOnline: checkingOnline,
         provider: this.iota.api.ext.provider,
-        ready: ready
+        ready: ready,
+        addingPage: this.addingPage
       };
     }
   }, {
@@ -232,127 +234,138 @@ var Romeo = function (_Base) {
         var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var onCreate = arguments[1];
 
-        var preventRetries, sourcePage, _opts$includeReuse, includeReuse, currentPage, newPage, address, inputs, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, input, value, _value;
+        var preventRetries, sourcePage, _opts$includeReuse, includeReuse, currentPage, _newPage, address, inputs, tag, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, input, value, _value;
 
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
+                this.addingPage = true;
+                _context4.prev = 1;
                 preventRetries = opts.preventRetries, sourcePage = opts.sourcePage, _opts$includeReuse = opts.includeReuse, includeReuse = _opts$includeReuse === undefined ? false : _opts$includeReuse;
                 currentPage = sourcePage || this.pages.getCurrent();
                 _context4.t0 = this.pages;
-                _context4.next = 5;
+                _context4.next = 7;
                 return this.pages.getNewPage();
 
-              case 5:
+              case 7:
                 _context4.t1 = _context4.sent[0];
-                newPage = _context4.t0.getByAddress.call(_context4.t0, _context4.t1).page;
-
-                onCreate && onCreate(newPage);
+                _newPage = _context4.t0.getByAddress.call(_context4.t0, _context4.t1).page;
 
                 if (currentPage.isSynced()) {
-                  _context4.next = 11;
+                  _context4.next = 12;
                   break;
                 }
 
-                _context4.next = 11;
+                _context4.next = 12;
                 return currentPage.sync();
 
-              case 11:
-                address = newPage.getCurrentAddress().address;
+              case 12:
+                address = _newPage.getCurrentAddress().address;
                 inputs = currentPage.getInputs(includeReuse);
+                tag = '99ROMEO9NEW9PAGE9TRANSFER99';
 
                 if (!this.guard.opts.sequentialTransfers) {
-                  _context4.next = 43;
+                  _context4.next = 45;
                   break;
                 }
 
                 _iteratorNormalCompletion = true;
                 _didIteratorError = false;
                 _iteratorError = undefined;
-                _context4.prev = 17;
+                _context4.prev = 19;
                 _iterator = inputs[Symbol.iterator]();
 
-              case 19:
+              case 21:
                 if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context4.next = 27;
+                  _context4.next = 29;
                   break;
                 }
 
                 input = _step.value;
                 value = input.balance;
-                _context4.next = 24;
-                return currentPage.sendTransfers([{ address: address, value: value }], [input], 'Moving funds to the new page sequentially.', 'Failed moving all or some funds!', null, preventRetries);
+                _context4.next = 26;
+                return currentPage.sendTransfers([{ address: address, value: value, tag: tag }], [input], 'Moving funds to the new page sequentially.', 'Failed moving all or some funds!', null, preventRetries);
 
-              case 24:
+              case 26:
                 _iteratorNormalCompletion = true;
-                _context4.next = 19;
-                break;
-
-              case 27:
-                _context4.next = 33;
+                _context4.next = 21;
                 break;
 
               case 29:
-                _context4.prev = 29;
-                _context4.t2 = _context4['catch'](17);
+                _context4.next = 35;
+                break;
+
+              case 31:
+                _context4.prev = 31;
+                _context4.t2 = _context4['catch'](19);
                 _didIteratorError = true;
                 _iteratorError = _context4.t2;
 
-              case 33:
-                _context4.prev = 33;
-                _context4.prev = 34;
+              case 35:
+                _context4.prev = 35;
+                _context4.prev = 36;
 
                 if (!_iteratorNormalCompletion && _iterator.return) {
                   _iterator.return();
                 }
 
-              case 36:
-                _context4.prev = 36;
+              case 38:
+                _context4.prev = 38;
 
                 if (!_didIteratorError) {
-                  _context4.next = 39;
+                  _context4.next = 41;
                   break;
                 }
 
                 throw _iteratorError;
 
-              case 39:
-                return _context4.finish(36);
-
-              case 40:
-                return _context4.finish(33);
-
               case 41:
-                _context4.next = 47;
-                break;
+                return _context4.finish(38);
+
+              case 42:
+                return _context4.finish(35);
 
               case 43:
+                _context4.next = 49;
+                break;
+
+              case 45:
                 _value = inputs.reduce(function (t, i) {
                   return t + i.balance;
                 }, 0);
 
                 if (!(_value > 0)) {
-                  _context4.next = 47;
+                  _context4.next = 49;
                   break;
                 }
 
-                _context4.next = 47;
-                return currentPage.sendTransfers([{ address: address, value: _value }], inputs, 'Moving funds to the new page', 'Failed moving funds!', null, preventRetries);
+                _context4.next = 49;
+                return currentPage.sendTransfers([{ address: address, value: _value, tag: tag }], inputs, 'Moving funds to the new page', 'Failed moving funds!', null, preventRetries);
 
-              case 47:
+              case 49:
+
+                _newPage.syncTransactions();
+                onCreate && onCreate(_newPage);
+                this.addingPage = false;
 
                 currentPage.syncTransactions();
-                newPage.syncTransactions();
                 this.onChange();
-                return _context4.abrupt('return', newPage);
+                return _context4.abrupt('return', _newPage);
 
-              case 51:
+              case 57:
+                _context4.prev = 57;
+                _context4.t3 = _context4['catch'](1);
+
+                this.addingPage = false;
+                throw _context4.t3;
+
+              case 61:
               case 'end':
                 return _context4.stop();
             }
           }
-        }, _callee4, this, [[17, 29, 33, 41], [34,, 36, 40]]);
+        }, _callee4, this, [[1, 57], [19, 31, 35, 43], [36,, 38, 42]]);
       }));
 
       function newPage() {

@@ -149,8 +149,7 @@ function createAPI(_ref) {
         onLive(null, result ? result : []);
       } else {
         cached = result ? result : [];
-        var index = result && result.length + 1 || 0;
-        _getNewAddress(iota.api, guard, seed, index, total, callback, true);
+        _getNewAddress(iota.api, guard, seed, cached.length, total, callback, true);
       }
     }).catch(function (error) {
       onCache(error, null);
