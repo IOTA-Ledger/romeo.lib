@@ -30,6 +30,7 @@ function isNormalInteger(str) {
 }
 
 function getAccountNumber(accountName) {
+  accountName = accountName.trim().toUpperCase();
   if (isNormalInteger(accountName)) {
     return accountName.substring(0, 9);
   }
