@@ -150,11 +150,11 @@ function createAPI(_ref) {
       } else {
         cached = result ? result : [];
         var index = result && result.length + 1 || 0;
-        _getNewAddress(iota.api, guard, seed, index, total, callback);
+        _getNewAddress(iota.api, guard, seed, index, total, callback, true);
       }
     }).catch(function (error) {
       onCache(error, null);
-      _getNewAddress(iota.api, guard, seed, 0, total, callback);
+      _getNewAddress(iota.api, guard, seed, 0, total, callback, true);
     });
   }
 

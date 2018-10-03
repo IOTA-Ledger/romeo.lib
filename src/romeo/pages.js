@@ -25,6 +25,17 @@ class Pages extends BasePage {
     this.getNewPage = this.getNewAddress;
   }
 
+  async sync(force = false, priority = 100000) {
+    await this.syncAddresses(priority, !force);
+    if (!Object.keys(this.addresses).length) {
+      await this.syncAddresses(priority, false);
+    }
+    if (!Object.keys(this.addresses).length) {
+      await this.getNewPage(null);
+    }
+    return this;
+  }
+
   asJson() {
     return Object.values(this.pages).map(p => {
       const { address, seed, keyIndex, page } = p;
@@ -40,7 +51,7 @@ class Pages extends BasePage {
 
   async applyAddresses(addresses) {
     if (!addresses || !addresses.length) {
-      return await this.getNewPage();
+      return;
     }
 
     const { queue, iota, db, guard } = this.opts;

@@ -127,12 +127,12 @@ function createAPI({ path, password, provider, database, guard }) {
         } else {
           cached = result ? result : [];
           const index = (result && result.length + 1) || 0;
-          _getNewAddress(iota.api, guard, seed, index, total, callback);
+          _getNewAddress(iota.api, guard, seed, index, total, callback, true);
         }
       })
       .catch(error => {
         onCache(error, null);
-        _getNewAddress(iota.api, guard, seed, 0, total, callback);
+        _getNewAddress(iota.api, guard, seed, 0, total, callback, true);
       });
   }
 

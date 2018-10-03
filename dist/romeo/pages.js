@@ -43,6 +43,54 @@ var Pages = function (_BasePage) {
   }
 
   _createClass(Pages, [{
+    key: 'sync',
+    value: function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 100000;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return this.syncAddresses(priority, !force);
+
+              case 2:
+                if (Object.keys(this.addresses).length) {
+                  _context.next = 5;
+                  break;
+                }
+
+                _context.next = 5;
+                return this.syncAddresses(priority, false);
+
+              case 5:
+                if (Object.keys(this.addresses).length) {
+                  _context.next = 8;
+                  break;
+                }
+
+                _context.next = 8;
+                return this.getNewPage(null);
+
+              case 8:
+                return _context.abrupt('return', this);
+
+              case 9:
+              case 'end':
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function sync() {
+        return _ref.apply(this, arguments);
+      }
+
+      return sync;
+    }()
+  }, {
     key: 'asJson',
     value: function asJson() {
       return Object.values(this.pages).map(function (p) {
@@ -64,27 +112,23 @@ var Pages = function (_BasePage) {
   }, {
     key: 'applyAddresses',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(addresses) {
+      var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(addresses) {
         var _this2 = this;
 
         var _opts, queue, iota, db, guard, startIndex, currentPage, otherPages;
 
-        return regeneratorRuntime.wrap(function _callee$(_context) {
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context2.prev = _context2.next) {
               case 0:
                 if (!(!addresses || !addresses.length)) {
-                  _context.next = 4;
+                  _context2.next = 2;
                   break;
                 }
 
-                _context.next = 3;
-                return this.getNewPage();
+                return _context2.abrupt('return');
 
-              case 3:
-                return _context.abrupt('return', _context.sent);
-
-              case 4:
+              case 2:
                 _opts = this.opts, queue = _opts.queue, iota = _opts.iota, db = _opts.db, guard = _opts.guard;
                 startIndex = Object.keys(this.pages).filter(function (e) {
                   return !addresses.includes(e);
@@ -131,31 +175,31 @@ var Pages = function (_BasePage) {
                 })[0].page.setCurrent(true);
 
                 if (!currentPage) {
-                  _context.next = 15;
+                  _context2.next = 13;
                   break;
                 }
 
-                _context.next = 14;
+                _context2.next = 12;
                 return currentPage.init(true, 6000);
 
-              case 14:
+              case 12:
                 Promise.all(otherPages.map(function (p) {
                   return p.init();
                 }));
 
-              case 15:
+              case 13:
                 this.onChange();
 
-              case 16:
+              case 14:
               case 'end':
-                return _context.stop();
+                return _context2.stop();
             }
           }
-        }, _callee, this);
+        }, _callee2, this);
       }));
 
-      function applyAddresses(_x) {
-        return _ref.apply(this, arguments);
+      function applyAddresses(_x3) {
+        return _ref2.apply(this, arguments);
       }
 
       return applyAddresses;
@@ -185,65 +229,20 @@ var Pages = function (_BasePage) {
   }, {
     key: 'syncPage',
     value: function () {
-      var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(page) {
+      var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(page) {
         var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 30;
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.next = 2;
-                return page.sync(force, priority);
-
-              case 2:
-                return _context2.abrupt('return', _context2.sent);
-
-              case 3:
-              case 'end':
-                return _context2.stop();
-            }
-          }
-        }, _callee2, this);
-      }));
-
-      function syncPage(_x4) {
-        return _ref2.apply(this, arguments);
-      }
-
-      return syncPage;
-    }()
-  }, {
-    key: 'syncCurrentPage',
-    value: function () {
-      var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
-        var priority = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30;
-        var currentPage;
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
-                currentPage = this.getCurrent();
+                _context3.next = 2;
+                return page.sync(force, priority);
 
-                if (!(currentPage && !currentPage.isSynced())) {
-                  _context3.next = 7;
-                  break;
-                }
+              case 2:
+                return _context3.abrupt('return', _context3.sent);
 
-                _context3.next = 4;
-                return this.syncPage(currentPage, true, priority);
-
-              case 4:
-                _context3.t0 = _context3.sent;
-                _context3.next = 8;
-                break;
-
-              case 7:
-                _context3.t0 = null;
-
-              case 8:
-                return _context3.abrupt('return', _context3.t0);
-
-              case 9:
+              case 3:
               case 'end':
                 return _context3.stop();
             }
@@ -251,8 +250,53 @@ var Pages = function (_BasePage) {
         }, _callee3, this);
       }));
 
-      function syncCurrentPage() {
+      function syncPage(_x6) {
         return _ref3.apply(this, arguments);
+      }
+
+      return syncPage;
+    }()
+  }, {
+    key: 'syncCurrentPage',
+    value: function () {
+      var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
+        var priority = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30;
+        var currentPage;
+        return regeneratorRuntime.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                currentPage = this.getCurrent();
+
+                if (!(currentPage && !currentPage.isSynced())) {
+                  _context4.next = 7;
+                  break;
+                }
+
+                _context4.next = 4;
+                return this.syncPage(currentPage, true, priority);
+
+              case 4:
+                _context4.t0 = _context4.sent;
+                _context4.next = 8;
+                break;
+
+              case 7:
+                _context4.t0 = null;
+
+              case 8:
+                return _context4.abrupt('return', _context4.t0);
+
+              case 9:
+              case 'end':
+                return _context4.stop();
+            }
+          }
+        }, _callee4, this);
+      }));
+
+      function syncCurrentPage() {
+        return _ref4.apply(this, arguments);
       }
 
       return syncCurrentPage;

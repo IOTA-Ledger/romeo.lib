@@ -380,26 +380,22 @@ var LedgerGuard = function (_BaseGuard) {
                 // get the corresponding address derivation
 
                 _ref9 = this.activePageIndex < 0 ? PAGE_ADDRESS_DERIVATION(account, index) : ADDRESS_DERIVATION(account, this.activePageIndex, index), path = _ref9.path, keyIndex = _ref9.keyIndex;
-
-
-                console.log('_getGenericAddress: index: ' + index + '; path: ' + path + ', keyIndex: ' + keyIndex + ', account: ' + account);
-                _context7.next = 5;
+                _context7.next = 4;
                 return this._setActiveSeed(path);
 
-              case 5:
-                _context7.next = 7;
+              case 4:
+                _context7.next = 6;
                 return this.hwapp.getAddress(keyIndex);
 
-              case 7:
+              case 6:
                 address = _context7.sent;
 
-                console.log('_getGenericAddress: address: ' + address + ';');
                 if (debug) {
                   console.log('getAddress; index=%i, key=%s', keyIndex, address);
                 }
                 return _context7.abrupt('return', address);
 
-              case 11:
+              case 9:
               case 'end':
                 return _context7.stop();
             }
