@@ -39,7 +39,7 @@
     "async": "^2.6.0",
     "better-queue": "^3.8.6",
     "better-queue-memory": "^1.0.2",
-    "hw-app-iota": "^0.4.1",
+    "hw-app-iota": "^0.5.1",
     "iota.lib.js": "^0.4.7",
     "iota.lib.js.powsrvio": "^0.0.1",
     "is-online": "^7.0.0",

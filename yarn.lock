@@ -2566,13 +2566,15 @@ https-browserify@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/https-browserify/-/https-browserify-1.0.0.tgz#ec06c10e0a34c0f2faf199f7fd7fc78fffd03c73"
 
-hw-app-iota@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/hw-app-iota/-/hw-app-iota-0.4.1.tgz#4acfe75aa218f27ff6e16dc540815d4fcd5cc858"
+hw-app-iota@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/hw-app-iota/-/hw-app-iota-0.5.1.tgz#f6a70f91b8bdeaae8083f49f9e3b598eb4f46ecb"
+  integrity sha512-H8N6TGG/TFCmqMLCd94v5XLqpSmNZTq2yDbYNBf3McJpsacHdw9aiQFuqY1V2LMXzHeL6tj2o0F+EVwl8c5u1Q==
   dependencies:
     babel-runtime "^6.26.0"
     bip32-path "^0.4.2"
     iota.lib.js "^0.5.0"
+    semver "^5.6.0"
     struct "0.0.12"
 
 ieee754@^1.1.4:
@@ -4764,6 +4766,11 @@ semver-diff@^2.0.0:
 semver@^5.0.3, semver@^5.1.0, semver@^5.3.0, semver@^5.4.1, semver@^5.5.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
+
+semver@^5.6.0:
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-5.6.0.tgz#7e74256fbaa49c75aa7c7a205cc22799cac80004"
+  integrity sha512-RS9R6R35NYgQn++fkDWaOmqGoj4Ek9gGs+DPxNUZKuwE183xjJroKvyo1IzVFeXvUrvmALy6FWD5xrdJT25gMg==
 
 send@0.16.2:
   version "0.16.2"
