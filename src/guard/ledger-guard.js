@@ -4,7 +4,7 @@ const AppIota = require('hw-app-iota').default;
 const semver = require('semver');
 
 // allowed version range for the Ledger Nano app
-const APP_VERSION_RANGE = '^0.4.0';
+const APP_VERSION_RANGE = '0.4 - 0.5';
 
 // BIP32 path to derive the page seed on the Ledger Nano
 const PAGE_BIP32_PATH = (account, pageIndex) =>
