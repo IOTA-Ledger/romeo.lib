@@ -1,15 +1,21 @@
 const IOTA = require('iota.lib.js');
+const usePowSrvIO = require('iota.lib.js.powsrvio');
+const async = require('async');
 const { Database } = require('./db');
 const { IOTA_API_ENDPOINT } = require('./config');
 
-function createAPI({ path, password, provider, database }) {
+function createAPI({ path, password, provider, database, guard }) {
   const db = database || new Database({ path, password });
   const iota = new IOTA({ provider: provider || IOTA_API_ENDPOINT });
+  const account = guard.opts.account;
+
+  usePowSrvIO(iota, 5000, null);
+
   const getTrytes = iota.api.getTrytes.bind(iota.api);
 
   iota.api.getTrytes = function(hashes, callback) {
     // First, get trytes from db
-    db.getMany(hashes.map(h => `tryte-${h}`)).then(result => {
+    db.getMany(hashes.map(h => `tryte-${account}-${h}`)).then(result => {
       // See what we don't have
       const requestHashes = result
         .map((r, i) => (r ? null : hashes[i]))
@@ -23,7 +29,9 @@ function createAPI({ path, password, provider, database }) {
           }
           // Save all returned hashes
           Promise.all(
-            trytes.map((tryte, i) => db.put(`tryte-${requestHashes[i]}`, tryte))
+            trytes.map((tryte, i) =>
+              db.put(`tryte-${account}-${requestHashes[i]}`, tryte)
+            )
           ).then(() => {
             // Mixin new returned trytes to previous results:
             callback(null, result.map(r => r || trytes.splice(0, 1)[0]));
@@ -49,13 +57,13 @@ function createAPI({ path, password, provider, database }) {
       }
       Promise.all(
         addresses.map((address, i) =>
-          db.put(`balance-${address}`, results.balances[i])
+          db.put(`balance-${account}-${address}`, results.balances[i])
         )
       ).then(() => onLive(null, results.balances.map(b => parseInt(b))));
     };
 
     db
-      .getMany(addresses.map(address => `balance-${address}`))
+      .getMany(addresses.map(address => `balance-${account}-${address}`))
       .then(result => {
         const balances = result.map(r => parseInt(r || 0));
         onCache(null, balances);
@@ -77,12 +85,14 @@ function createAPI({ path, password, provider, database }) {
         return onLive(error, null);
       }
       Promise.all(
-        addresses.map((address, i) => db.put(`spent-${address}`, results[i]))
+        addresses.map((address, i) =>
+          db.put(`spent-${account}-${address}`, results[i])
+        )
       ).then(() => onLive(null, results));
     };
 
     db
-      .getMany(addresses.map(address => `spent-${address}`))
+      .getMany(addresses.map(address => `spent-${account}-${address}`))
       .then(result => {
         onCache(null, result);
         if (cachedOnly) {
@@ -97,30 +107,44 @@ function createAPI({ path, password, provider, database }) {
       });
   }
 
-  function getAddresses(seed, onCache, onLive, cachedOnly = false) {
+  function setAddresses(seed, addresses) {
+    return db.put(`addresses-${account}-${seed}`, addresses);
+  }
+
+  function getAddresses(seed, onCache, onLive, cachedOnly = false, total) {
+    let cached = [];
     const callback = (error, results) => {
       if (error) {
         return onLive(error, null);
       }
-      const addresses = results.slice(0, -1);
+      const addresses = cached.concat(results.slice(0, -1));
       db
-        .put(`addresses-${seed}`, addresses)
+        .put(`addresses-${account}-${seed}`, addresses)
         .then(() => onLive(null, addresses));
     };
 
     db
-      .get(`addresses-${seed}`)
+      .get(`addresses-${account}-${seed}`)
       .then(result => {
         onCache(null, result ? result : []);
         if (cachedOnly) {
           onLive(null, result ? result : []);
         } else {
-          iota.api.getNewAddress(seed, { returnAll: true }, callback);
+          cached = result ? result : [];
+          _getNewAddress(
+            iota.api,
+            guard,
+            seed,
+            cached.length,
+            total,
+            callback,
+            true
+          );
         }
       })
       .catch(error => {
         onCache(error, null);
-        iota.api.getNewAddress(seed, { returnAll: true }, callback);
+        _getNewAddress(iota.api, guard, seed, 0, total, callback, true);
       });
   }
 
@@ -130,13 +154,13 @@ function createAPI({ path, password, provider, database }) {
         return onLive(error, null);
       }
       db
-        .put(`transactions-${address}`, hashes)
-        .then(() => db.put(`inclusions-${address}`, inclusions))
+        .put(`transactions-${account}-${address}`, hashes)
+        .then(() => db.put(`inclusions-${account}-${address}`, inclusions))
         .then(() => onLive(null, { hashes, inclusions }));
     };
 
-    const findTransactions = () => {
-      if (cachedOnly) {
+    const findTransactions = (force = false) => {
+      if (cachedOnly && !force) {
         return;
       }
       iota.api.findTransactions({ addresses: [address] }, (error, hashes) => {
@@ -155,21 +179,21 @@ function createAPI({ path, password, provider, database }) {
     };
 
     db
-      .get(`transactions-${address}`)
+      .get(`transactions-${account}-${address}`)
       .then(hashes => {
         hashes = hashes ? hashes : [];
         return db
-          .get(`inclusions-${address}`)
+          .get(`inclusions-${account}-${address}`)
           .then(inclusions => {
             const result = {
               hashes,
               inclusions: inclusions || hashes.map(() => false)
             };
             onCache(null, result);
-            if (cachedOnly) {
+            if (cachedOnly && inclusions && inclusions.length) {
               onLive(null, result);
             } else {
-              findTransactions();
+              findTransactions(true);
             }
           })
           .catch(dbError);
@@ -177,6 +201,7 @@ function createAPI({ path, password, provider, database }) {
       .catch(dbError);
   }
 
+  // TODO: find a way to get Transactions for multiple addresses at once.
   function getTransactionObjects(address, onCache, onLive, cachedOnly = false) {
     let liveDone = false;
 
@@ -219,8 +244,37 @@ function createAPI({ path, password, provider, database }) {
     getTransactions(address, process(), process(true), cachedOnly);
   }
 
+  function getNewAddress(pageIndex, index, total, callback) {
+    if (!guard) throw new Error('guard has not been set up!');
+    _getNewAddress(iota.api, guard, pageIndex, index, total, callback, false);
+  }
+
+  function sendTransfer(
+    pageIndex,
+    depth,
+    minWeightMagnitude,
+    transfers,
+    options,
+    callback
+  ) {
+    if (!guard) throw new Error('guard has not been set up!');
+    _sendTransfer(
+      iota.api,
+      guard,
+      pageIndex,
+      depth,
+      minWeightMagnitude,
+      transfers,
+      options,
+      callback
+    );
+  }
+
   iota.api.ext = {
+    sendTransfer,
+    getNewAddress,
     getBalances,
+    setAddresses,
     getAddresses,
     getTransactions,
     getTransactionObjects,
@@ -229,6 +283,163 @@ function createAPI({ path, password, provider, database }) {
   };
 
   return iota;
+}
+
+function _getNewAddress(
+  api,
+  guard,
+  seedOrPageIndex,
+  index,
+  total,
+  callback,
+  returnAll = true
+) {
+  if (!guard) {
+    api.getNewAddress(seedOrPageIndex, { returnAll, total }, callback);
+  } else {
+    const getter =
+      seedOrPageIndex < 0
+        ? (i, t) => guard.getPages(i, t)
+        : (i, t) => guard.getAddresses(seedOrPageIndex, i, t);
+    (async () => {
+      const allAddresses = [];
+
+      // Case 1: total
+      //
+      // If total number of addresses to generate is supplied, simply generate
+      // and return the list of all addresses
+      if (total) {
+        try {
+          return callback(null, await getter(index, total));
+        } catch (err) {
+          return callback(err);
+        }
+      } else {
+        //  Case 2: no total provided
+        //
+        //  Continue calling wasAddressSpenFrom & findTransactions to see if address was already created
+        //  if null, return list of addresses
+        //
+        async.doWhilst(
+          function(callback) {
+            // Iteratee function
+            getter(index, 1)
+              .then(addresses => {
+                const newAddress = addresses[0];
+
+                if (returnAll) {
+                  allAddresses.push(newAddress);
+                }
+
+                // Increase the index
+                index += 1;
+
+                api.wereAddressesSpentFrom(newAddress, function(err, res) {
+                  if (err) {
+                    return callback(err);
+                  }
+
+                  // Validity check
+                  if (res[0]) {
+                    callback(null, newAddress, true, index - 1);
+                  } else {
+                    // Check for txs if address isn't spent
+                    api.findTransactions({ addresses: [newAddress] }, function(
+                      err,
+                      transactions
+                    ) {
+                      if (err) {
+                        return callback(err);
+                      }
+                      callback(
+                        err,
+                        newAddress,
+                        transactions.length > 0,
+                        index - 1
+                      );
+                    });
+                  }
+                });
+              })
+              .catch(err => callback(err));
+          },
+          function(address, isUsed) {
+            return isUsed;
+          },
+          function(err, address, isUsed, index) {
+            if (err) {
+              return callback(err);
+            } else {
+              return callback(null, returnAll ? allAddresses : address, index);
+            }
+          }
+        );
+      }
+    })();
+  }
+}
+
+function _sendTransfer(
+  api,
+  guard,
+  seedOrPageIndex,
+  depth,
+  minWeightMagnitude,
+  transfers,
+  options,
+  callback
+) {
+  if (!guard) {
+    return api.sendTransfer(
+      seedOrPageIndex,
+      depth,
+      minWeightMagnitude,
+      transfers,
+      options,
+      callback
+    );
+  }
+
+  (async () => {
+    let index = options.addressIndex;
+    try {
+      const { inputs } = options;
+      const totalValue = transfers.reduce((t, i) => t + i.value, 0);
+      if (totalValue > 0 && !options.inputs)
+        return callback(new Error('No inputs for guard send provided!'));
+      const remainder =
+        totalValue > 0
+          ? options.address ||
+            (await (() =>
+              new Promise(resolve => {
+                _getNewAddress(
+                  api,
+                  guard,
+                  seedOrPageIndex,
+                  index,
+                  null,
+                  (error, address, addressIndex) => {
+                    if (error) throw error;
+                    index = addressIndex;
+                    resolve(address);
+                  },
+                  false
+                );
+              }))())
+          : null;
+
+      const trytes = await guard.getSignedTransactions(
+        seedOrPageIndex,
+        transfers,
+        inputs,
+        { address: remainder, keyIndex: index }
+      );
+
+      api.sendTrytes(trytes, depth, minWeightMagnitude, options, callback);
+    } catch (err) {
+      callback(err);
+    }
+  })();
 }
 
 module.exports = createAPI;

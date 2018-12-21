@@ -3,8 +3,9 @@ const MemoryStore = require('better-queue-memory');
 const { createIdentifier } = require('./utils');
 
 const DEFAULT_OPTIONS = {
-  checkOnline: require('is-online'),
-  onChange: queue => {}
+  checkOnline: async () => true, //require('is-online'),
+  onChange: queue => {},
+  maxRetries: 5
 };
 
 function createQueue(options) {
@@ -14,16 +15,26 @@ function createQueue(options) {
 
   const queue = new Queue(
     (input, cb) => {
-      input
-        .promise()
-        .then(result => cb(null, result))
-        .catch(error => cb(error, null));
+      const runner = () =>
+        input
+          .promise()
+          .then(result => cb(null, result))
+          .catch(error => {
+            if (input.tries < opts.maxRetries && !input.opts.preventRetries) {
+              input.tries++;
+              runner();
+            } else {
+              cb(error, null);
+            }
+          });
+      runner();
     },
     {
       store: new MemoryStore({}),
       id: 'id',
       priority: (job, cb) => cb(null, job.priority || 1),
-      maxRetries: 5,
+      // disable retrying for now, to get potential ledger errors at once
+      // maxRetries: 5,
       retryDelay: 1000,
       cancelIfRunning: true,
       precondition: cb => checkOnline().then(online => cb(null, online)),
@@ -42,7 +53,7 @@ function createQueue(options) {
 
   function add(promise, priority, opts) {
     const id = createIdentifier();
-    const job = queue.push({ id, promise, priority });
+    const job = queue.push({ id, promise, priority, tries: 0, opts });
     job.opts = opts;
     job.id = id;
     job.priority = priority;

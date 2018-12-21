@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const XXH = require('xxhashjs');
 const validate = require('./validate');
 
 /**
@@ -21,8 +22,26 @@ function getSecondsPassed(time) {
   return (new Date().getTime() - time.getTime()) / 1000;
 }
 
+function isNormalInteger(str) {
+  const n = Math.floor(Number(str));
+  return n !== Infinity && String(n) === str && n >= 0;
+}
+
+function getAccountNumber(accountName) {
+  accountName = accountName.trim().toUpperCase();
+  if (isNormalInteger(accountName)) {
+    return accountName.substring(0, 9);
+  }
+  const H = XXH.h32(0xabcd);
+  return H.update(accountName)
+    .digest()
+    .toString(10)
+    .substring(0, 9);
+}
+
 module.exports = {
   validate,
   createIdentifier,
-  getSecondsPassed
+  getSecondsPassed,
+  getAccountNumber
 };

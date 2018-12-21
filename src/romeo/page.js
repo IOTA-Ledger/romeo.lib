@@ -6,7 +6,7 @@ const DEFAULT_OPTIONS = {
   index: 1,
   isCurrent: true,
   queue: null,
-  seed: null,
+  guard: null,
   iota: null,
   db: null
 };
@@ -24,42 +24,52 @@ class Page extends BasePage {
     super(opts);
     this.lastSynced = null;
     this.isSyncing = false;
+    this.loadPage(opts.index);
+  }
+
+  async loadPage(priority) {
+    await this.syncAddresses(priority, true);
+    return Promise.all([
+      this.syncTransactions(priority, true),
+      this.syncBalances(priority, true),
+      this.syncSpent(priority, true)
+    ]).then(() => this.onChange());
   }
 
   async init(force = false, priority) {
-    const { db, seed } = this.opts;
+    const { db, index } = this.opts;
     if (db) {
-      const timestamp = await db.get(`lastsynced-${seed}`);
+      const timestamp = await db.get(
+        `lastsynced-${this.opts.guard.opts.account}-${index}`
+      );
       this.lastSynced = timestamp ? new Date(timestamp) : null;
     }
     return await this.sync(force, priority);
   }
 
   async sync(force = false, priority) {
-    const { db, seed, isCurrent } = this.opts;
+    const { db, index, isCurrent } = this.opts;
+    if (!priority) {
+      priority = index + 1;
+    }
     if (!this.isSyncing) {
       try {
         this.isSyncing = true;
         await this.syncAddresses(priority, !force);
-        if (!Object.keys(this.addresses).length) {
-          await this.syncAddresses(priority, false);
-          if (!Object.keys(this.addresses).length) {
-            await this.getNewAddress();
-            await this.syncAddresses(priority, false);
-          }
-        }
         // Auto-create a new unspent address
-        if (!Object.values(this.addresses).find(a => !a.spent)) {
+        if (isCurrent && !Object.values(this.addresses).find(a => !a.spent)) {
           await this.getNewAddress();
-          await this.syncAddresses(priority, false);
         }
-        await this.syncTransactions(priority, !force && !isCurrent);
+        await this.syncTransactions(priority, !force);
         await this.syncBalances(priority, !force);
         await this.syncSpent(priority, !force);
         this.isSyncing = false;
         this.lastSynced = isCurrent || force ? new Date() : this.lastSynced;
         if (db) {
-          await db.put(`lastsynced-${seed}`, this.lastSynced);
+          await db.put(
+            `lastsynced-${this.opts.guard.opts.account}-${index}`,
+            this.lastSynced
+          );
           this.onChange();
         }
       } catch (e) {
@@ -87,7 +97,7 @@ class Page extends BasePage {
 
   asJson() {
     const { lastSynced, isSyncing } = this;
-    return Object.assign(super.asJson(), {
+    return Object.assign({}, super.asJson(), {
       lastSynced,
       isSyncing,
       balance: this.getBalance(),
@@ -137,6 +147,12 @@ class Page extends BasePage {
     return super.getNewAddress(total, addresses =>
       this.syncTransactions(40, false, addresses)
     );
+  }
+
+  async displayAddress(keyIndex) {
+    if (this.opts.guard.displayAddress) {
+      await this.opts.guard.displayAddress(this.opts.index, keyIndex);
+    }
   }
 
   applyBalances(addresses, balances) {
@@ -206,11 +222,15 @@ class Page extends BasePage {
           cachedOnly
         }
       );
-      job.on('finish', resolve);
+      job.on('finish', result => {
+        this.onChange();
+        resolve(result);
+      });
       job.on('failed', err => {
         this.log('Could not sync page balances', err);
         reject(err);
       });
+      this.onChange();
     });
   }
 
@@ -248,11 +268,15 @@ class Page extends BasePage {
           cachedOnly
         }
       );
-      job.on('finish', resolve);
+      job.on('finish', result => {
+        this.onChange();
+        resolve(result);
+      });
       job.on('failed', err => {
         this.log('Could not sync page states', err);
         reject(err);
       });
+      this.onChange();
     });
   }
 
@@ -303,6 +327,7 @@ class Page extends BasePage {
         this.log('Could not sync page transactions', err);
         reject(err);
       });
+      this.onChange();
     });
   }
 }

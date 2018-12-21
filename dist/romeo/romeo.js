@@ -15,9 +15,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var _require = require('./base'),
     Base = _require.Base;
 
-var crypto = require('../crypto');
 var createQueue = require('../queue');
-var createAPI = require('../iota');
 
 var _require2 = require('../db'),
     Database = _require2.Database;
@@ -26,10 +24,10 @@ var _require3 = require('./pages'),
     Pages = _require3.Pages;
 
 var DEFAULT_OPTIONS = {
-  username: null,
-  password: null,
   syncInterval: 60000,
-  dbPath: 'romeo'
+  dbPath: 'romeo',
+  guard: null,
+  account: 0
 };
 
 var Romeo = function (_Base) {
@@ -44,16 +42,21 @@ var Romeo = function (_Base) {
 
     var _this = _possibleConstructorReturn(this, (Romeo.__proto__ || Object.getPrototypeOf(Romeo)).call(this, opts));
 
+    if (!_this.opts.guard) throw new Error('No guard provided!');
+    _this.guard = _this.opts.guard;
     _this.ready = false;
     _this.isOnline = 1;
     _this.checkingOnline = false;
+    _this.addingPage = false;
     _this.opts = opts;
-    _this.keys = crypto.keys.getKeys(opts.username, opts.password);
-    _this.db = new Database({ path: opts.dbPath, password: _this.keys.password });
-    _this.iota = createAPI({ database: _this.db });
+    _this.db = new Database({
+      path: opts.dbPath + '-account-' + _this.guard.opts.account,
+      password: _this.guard.getSymmetricKey()
+    });
+    _this.iota = _this.guard.setupIOTA({ database: _this.db });
     _this.queue = createQueue();
     _this.pages = new Pages({
-      keys: _this.keys,
+      guard: _this.guard,
       queue: _this.queue,
       iota: _this.iota,
       db: _this.db,
@@ -89,7 +92,7 @@ var Romeo = function (_Base) {
 
               case 3:
                 _context.next = 5;
-                return this.pages.init();
+                return this.pages.init(false, 10000);
 
               case 5:
                 this.updater = setInterval(function () {
@@ -159,21 +162,24 @@ var Romeo = function (_Base) {
     key: 'asJson',
     value: function asJson() {
       var jobs = this.queue.jobs,
-          keys = this.keys,
           pages = this.pages,
           isOnline = this.isOnline,
           checkingOnline = this.checkingOnline,
           ready = this.ready;
 
       return {
-        keys: keys,
-        jobs: Object.values(jobs),
-        genericJobs: pages.getJobs(),
+        jobs: Object.values(jobs).map(function (j) {
+          return Object.assign({}, j);
+        }),
+        genericJobs: pages.getJobs().map(function (j) {
+          return Object.assign({}, j);
+        }),
         pages: pages.asJson(),
         isOnline: isOnline,
         checkingOnline: checkingOnline,
         provider: this.iota.api.ext.provider,
-        ready: ready
+        ready: ready,
+        addingPage: this.addingPage
       };
     }
   }, {
@@ -227,60 +233,140 @@ var Romeo = function (_Base) {
     value: function () {
       var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
         var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var onCreate = arguments[1];
 
-        var sourcePage, _opts$includeReuse, includeReuse, currentPage, newPage, address, inputs, value;
+        var preventRetries, sourcePage, _opts$includeReuse, includeReuse, currentPage, _newPage, address, inputs, tag, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, input, value, _value;
 
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                sourcePage = opts.sourcePage, _opts$includeReuse = opts.includeReuse, includeReuse = _opts$includeReuse === undefined ? false : _opts$includeReuse;
+                this.addingPage = true;
+                _context4.prev = 1;
+                preventRetries = opts.preventRetries, sourcePage = opts.sourcePage, _opts$includeReuse = opts.includeReuse, includeReuse = _opts$includeReuse === undefined ? false : _opts$includeReuse;
                 currentPage = sourcePage || this.pages.getCurrent();
                 _context4.t0 = this.pages;
-                _context4.next = 5;
+                _context4.next = 7;
                 return this.pages.getNewPage();
 
-              case 5:
+              case 7:
                 _context4.t1 = _context4.sent[0];
-                newPage = _context4.t0.getByAddress.call(_context4.t0, _context4.t1).page;
+                _newPage = _context4.t0.getByAddress.call(_context4.t0, _context4.t1).page;
 
                 if (currentPage.isSynced()) {
-                  _context4.next = 10;
+                  _context4.next = 12;
                   break;
                 }
 
-                _context4.next = 10;
+                _context4.next = 12;
                 return currentPage.sync();
 
-              case 10:
-                address = newPage.getCurrentAddress().address;
+              case 12:
+                address = _newPage.getCurrentAddress().address;
                 inputs = currentPage.getInputs(includeReuse);
-                value = inputs.reduce(function (t, i) {
+                tag = '99ROMEO9NEW9PAGE9TRANSFER99';
+
+                if (!this.guard.opts.sequentialTransfers) {
+                  _context4.next = 45;
+                  break;
+                }
+
+                _iteratorNormalCompletion = true;
+                _didIteratorError = false;
+                _iteratorError = undefined;
+                _context4.prev = 19;
+                _iterator = inputs[Symbol.iterator]();
+
+              case 21:
+                if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                  _context4.next = 29;
+                  break;
+                }
+
+                input = _step.value;
+                value = input.balance;
+                _context4.next = 26;
+                return currentPage.sendTransfers([{ address: address, value: value, tag: tag }], [input], 'Moving funds to the new page sequentially.', 'Failed moving all or some funds!', null, preventRetries);
+
+              case 26:
+                _iteratorNormalCompletion = true;
+                _context4.next = 21;
+                break;
+
+              case 29:
+                _context4.next = 35;
+                break;
+
+              case 31:
+                _context4.prev = 31;
+                _context4.t2 = _context4['catch'](19);
+                _didIteratorError = true;
+                _iteratorError = _context4.t2;
+
+              case 35:
+                _context4.prev = 35;
+                _context4.prev = 36;
+
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                  _iterator.return();
+                }
+
+              case 38:
+                _context4.prev = 38;
+
+                if (!_didIteratorError) {
+                  _context4.next = 41;
+                  break;
+                }
+
+                throw _iteratorError;
+
+              case 41:
+                return _context4.finish(38);
+
+              case 42:
+                return _context4.finish(35);
+
+              case 43:
+                _context4.next = 49;
+                break;
+
+              case 45:
+                _value = inputs.reduce(function (t, i) {
                   return t + i.balance;
                 }, 0);
 
-                if (!(value > 0)) {
-                  _context4.next = 18;
+                if (!(_value > 0)) {
+                  _context4.next = 49;
                   break;
                 }
 
-                _context4.next = 16;
-                return currentPage.sendTransfers([{ address: address, value: value }], inputs, 'Moving funds from the current page to the new one', 'Failed moving funds from the current page to the new one');
+                _context4.next = 49;
+                return currentPage.sendTransfers([{ address: address, value: _value, tag: tag }], inputs, 'Moving funds to the new page', 'Failed moving funds!', null, preventRetries);
 
-              case 16:
-                _context4.next = 18;
-                return newPage.syncTransactions();
+              case 49:
 
-              case 18:
+                _newPage.syncTransactions();
+                onCreate && onCreate(_newPage);
+                this.addingPage = false;
+
+                currentPage.syncTransactions();
                 this.onChange();
-                return _context4.abrupt('return', newPage);
+                return _context4.abrupt('return', _newPage);
 
-              case 20:
+              case 57:
+                _context4.prev = 57;
+                _context4.t3 = _context4['catch'](1);
+
+                this.addingPage = false;
+                throw _context4.t3;
+
+              case 61:
               case 'end':
                 return _context4.stop();
             }
           }
-        }, _callee4, this);
+        }, _callee4, this, [[1, 57], [19, 31, 35, 43], [36,, 38, 42]]);
       }));
 
       function newPage() {

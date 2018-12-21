@@ -1,5 +1,7 @@
 'use strict';
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
 var Queue = require('better-queue');
 var MemoryStore = require('better-queue-memory');
 
@@ -7,8 +9,30 @@ var _require = require('./utils'),
     createIdentifier = _require.createIdentifier;
 
 var DEFAULT_OPTIONS = {
-  checkOnline: require('is-online'),
-  onChange: function onChange(queue) {}
+  checkOnline: function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+      return regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              return _context.abrupt('return', true);
+
+            case 1:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, _callee, undefined);
+    }));
+
+    function checkOnline() {
+      return _ref.apply(this, arguments);
+    }
+
+    return checkOnline;
+  }(), //require('is-online'),
+  onChange: function onChange(queue) {},
+  maxRetries: 5
 };
 
 function createQueue(options) {
@@ -18,18 +42,27 @@ function createQueue(options) {
   var jobs = {};
 
   var queue = new Queue(function (input, cb) {
-    input.promise().then(function (result) {
-      return cb(null, result);
-    }).catch(function (error) {
-      return cb(error, null);
-    });
+    var runner = function runner() {
+      return input.promise().then(function (result) {
+        return cb(null, result);
+      }).catch(function (error) {
+        if (input.tries < opts.maxRetries && !input.opts.preventRetries) {
+          input.tries++;
+          runner();
+        } else {
+          cb(error, null);
+        }
+      });
+    };
+    runner();
   }, {
     store: new MemoryStore({}),
     id: 'id',
     priority: function priority(job, cb) {
       return cb(null, job.priority || 1);
     },
-    maxRetries: 5,
+    // disable retrying for now, to get potential ledger errors at once
+    // maxRetries: 5,
     retryDelay: 1000,
     cancelIfRunning: true,
     precondition: function precondition(cb) {
@@ -51,7 +84,7 @@ function createQueue(options) {
 
   function add(promise, priority, opts) {
     var id = createIdentifier();
-    var job = queue.push({ id: id, promise: promise, priority: priority });
+    var job = queue.push({ id: id, promise: promise, priority: priority, tries: 0, opts: opts });
     job.opts = opts;
     job.id = id;
     job.priority = priority;
