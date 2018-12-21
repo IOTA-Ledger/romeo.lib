@@ -1,6 +1,6 @@
-# Deviota Romeo Library
+# Romeo Library
 
-Deviota Romeo is a lightweight ledger built on top of the IOTA Tangle,
+Romeo is a lightweight ledger built on top of the IOTA Tangle,
 using the Deviota Field capabilities.
 
 This is, yet undocumented, backend library. Check the **romeo.html** project
@@ -17,16 +17,6 @@ npm install romeo.lib
 ## WARNING
 
 This software is experimental. Use at your own risk!
-
-## Contributing
-
-### Donations
-
-**Donations always welcome**:
-
-```
-AAJXXFJUEQHKPYIOUIUO9FWCMOAFBZAZPXIFRI9FLDQZJGHQENG9HNMODUZJCHR9RHHUSBHWJELGRDOWZRNWYLYCQW
-```
 
 ## Authors
 
