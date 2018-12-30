@@ -5,6 +5,7 @@ const semver = require('semver');
 
 // allowed version range for the Ledger Nano app
 const APP_VERSION_RANGE = '0.4 - 0.5';
+const LEGACY_VERSION_RANGE = '^0.4';
 
 // BIP32 path to derive the page seed on the Ledger Nano
 const PAGE_BIP32_PATH = (account, pageIndex) =>
@@ -12,6 +13,7 @@ const PAGE_BIP32_PATH = (account, pageIndex) =>
 
 // the iota lib needs a seed even for transactions without inputs
 const DUMMY_SEED = '9'.repeat(81);
+const MAX_BUNDLE_SIZE = 8;
 
 // derivation rules for the different type of addresses
 const ADDRESS_DERIVATION = (account, pageIndex, keyIndex) => ({
@@ -55,7 +57,9 @@ class LedgerGuard extends BaseGuard {
     }
 
     const hwapp = new AppIota(transport);
-    await LedgerGuard._checkVersion(hwapp);
+
+    const { legacy } = await LedgerGuard._checkVersion(hwapp);
+    opts.legacy = legacy;
 
     const { path, keyIndex } = KEY_ADDRESS_DERIVATION(opts.account);
     await hwapp.setActiveSeed(path, 1);
@@ -69,7 +73,13 @@ class LedgerGuard extends BaseGuard {
   }
 
   getMaxInputs() {
-    return 2;
+    const { security, legacy } = this.opts;
+
+    if (legacy) {
+      return 2;
+    }
+    // reserve one trasaction each for output and change
+    return Math.floor((MAX_BUNDLE_SIZE - 2) / security);
   }
 
   getSymmetricKey() {
@@ -194,6 +204,8 @@ class LedgerGuard extends BaseGuard {
         '"  before you can login!';
       throw new Error(message);
     }
+    const legacy = semver.satisfies(appVersion, LEGACY_VERSION_RANGE);
+    return { legacy };
   }
 }
 

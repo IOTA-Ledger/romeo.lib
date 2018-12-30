@@ -2566,10 +2566,10 @@ https-browserify@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/https-browserify/-/https-browserify-1.0.0.tgz#ec06c10e0a34c0f2faf199f7fd7fc78fffd03c73"
 
-hw-app-iota@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/hw-app-iota/-/hw-app-iota-0.5.1.tgz#f6a70f91b8bdeaae8083f49f9e3b598eb4f46ecb"
-  integrity sha512-H8N6TGG/TFCmqMLCd94v5XLqpSmNZTq2yDbYNBf3McJpsacHdw9aiQFuqY1V2LMXzHeL6tj2o0F+EVwl8c5u1Q==
+hw-app-iota@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/hw-app-iota/-/hw-app-iota-0.5.2.tgz#261585e85b8b8c9f30eb0facb693a26fa890b6bc"
+  integrity sha512-HUm5OTWH7c4GRjCgBCayCUrgJGQ5BML4LzOCK4GeQ2WwV4AnJ0ImoO3yrBc96Nq4CUa84Uo7wbh+GF47s5HWVQ==
   dependencies:
     babel-runtime "^6.26.0"
     bip32-path "^0.4.2"
