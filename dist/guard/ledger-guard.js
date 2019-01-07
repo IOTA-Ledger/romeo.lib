@@ -18,7 +18,8 @@ var AppIota = require('hw-app-iota').default;
 var semver = require('semver');
 
 // allowed version range for the Ledger Nano app
-var APP_VERSION_RANGE = '^0.4.0';
+var APP_VERSION_RANGE = '0.4 - 0.5';
+var LEGACY_VERSION_RANGE = '^0.4';
 
 // BIP32 path to derive the page seed on the Ledger Nano
 var PAGE_BIP32_PATH = function PAGE_BIP32_PATH(account, pageIndex) {
@@ -79,7 +80,17 @@ var LedgerGuard = function (_BaseGuard) {
   }, {
     key: 'getMaxInputs',
     value: function getMaxInputs() {
-      return 2;
+      var _opts = this.opts,
+          security = _opts.security,
+          legacy = _opts.legacy,
+          maxBundleSize = _opts.maxBundleSize;
+
+
+      if (legacy) {
+        return 2;
+      }
+      // reserve one trasaction each for output and change
+      return Math.floor((maxBundleSize - 2) / security);
     }
   }, {
     key: 'getSymmetricKey',
@@ -286,7 +297,7 @@ var LedgerGuard = function (_BaseGuard) {
                 }
 
                 _context5.next = 7;
-                return this.hwapp.signTransaction(transfers, inputs, remainder);
+                return this.hwapp.prepareTransfers(transfers, inputs, remainder);
 
               case 7:
                 return _context5.abrupt('return', _context5.sent);
@@ -329,13 +340,13 @@ var LedgerGuard = function (_BaseGuard) {
     key: '_setActiveSeed',
     value: function () {
       var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(path) {
-        var _opts, debug, security;
+        var _opts2, debug, security;
 
         return regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
-                _opts = this.opts, debug = _opts.debug, security = _opts.security;
+                _opts2 = this.opts, debug = _opts2.debug, security = _opts2.security;
                 // only pass the command, if the path has indeed changed
 
                 if (!(this.activePath !== path)) {
@@ -370,13 +381,13 @@ var LedgerGuard = function (_BaseGuard) {
     key: '_getGenericAddress',
     value: function () {
       var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(index) {
-        var _opts2, debug, account, _ref9, path, keyIndex, address;
+        var _opts3, debug, account, _ref9, path, keyIndex, address;
 
         return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
               case 0:
-                _opts2 = this.opts, debug = _opts2.debug, account = _opts2.account;
+                _opts3 = this.opts, debug = _opts3.debug, account = _opts3.account;
                 // get the corresponding address derivation
 
                 _ref9 = this.activePageIndex < 0 ? PAGE_ADDRESS_DERIVATION(account, index) : ADDRESS_DERIVATION(account, this.activePageIndex, index), path = _ref9.path, keyIndex = _ref9.keyIndex;
@@ -413,7 +424,7 @@ var LedgerGuard = function (_BaseGuard) {
     key: 'build',
     value: function () {
       var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(options) {
-        var opts, transport, hwapp, _KEY_ADDRESS_DERIVATI, path, keyIndex, keyAddress;
+        var opts, transport, hwapp, _ref11, legacy, _KEY_ADDRESS_DERIVATI, path, keyIndex, keyAddress;
 
         return regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
@@ -435,19 +446,29 @@ var LedgerGuard = function (_BaseGuard) {
                 return LedgerGuard._checkVersion(hwapp);
 
               case 8:
-                _KEY_ADDRESS_DERIVATI = KEY_ADDRESS_DERIVATION(opts.account), path = _KEY_ADDRESS_DERIVATI.path, keyIndex = _KEY_ADDRESS_DERIVATI.keyIndex;
-                _context8.next = 11;
-                return hwapp.setActiveSeed(path, 1);
+                _ref11 = _context8.sent;
+                legacy = _ref11.legacy;
 
-              case 11:
+                opts.legacy = legacy;
+                // retrieve max bundle size from device
                 _context8.next = 13;
-                return hwapp.getAddress(keyIndex);
+                return hwapp.getAppMaxBundleSize();
 
               case 13:
+                opts.maxBundleSize = _context8.sent;
+                _KEY_ADDRESS_DERIVATI = KEY_ADDRESS_DERIVATION(opts.account), path = _KEY_ADDRESS_DERIVATI.path, keyIndex = _KEY_ADDRESS_DERIVATI.keyIndex;
+                _context8.next = 17;
+                return hwapp.setActiveSeed(path, 1);
+
+              case 17:
+                _context8.next = 19;
+                return hwapp.getAddress(keyIndex);
+
+              case 19:
                 keyAddress = _context8.sent;
                 return _context8.abrupt('return', new LedgerGuard(hwapp, keyAddress.substr(0, 32), opts));
 
-              case 15:
+              case 21:
               case 'end':
                 return _context8.stop();
             }
@@ -464,8 +485,8 @@ var LedgerGuard = function (_BaseGuard) {
   }, {
     key: '_checkVersion',
     value: function () {
-      var _ref11 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(hwapp) {
-        var appVersion, message;
+      var _ref12 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(hwapp) {
+        var appVersion, message, legacy;
         return regeneratorRuntime.wrap(function _callee9$(_context9) {
           while (1) {
             switch (_context9.prev = _context9.next) {
@@ -487,6 +508,10 @@ var LedgerGuard = function (_BaseGuard) {
                 throw new Error(message);
 
               case 8:
+                legacy = semver.satisfies(appVersion, LEGACY_VERSION_RANGE);
+                return _context9.abrupt('return', { legacy: legacy });
+
+              case 10:
               case 'end':
                 return _context9.stop();
             }
@@ -495,7 +520,7 @@ var LedgerGuard = function (_BaseGuard) {
       }));
 
       function _checkVersion(_x16) {
-        return _ref11.apply(this, arguments);
+        return _ref12.apply(this, arguments);
       }
 
       return _checkVersion;
