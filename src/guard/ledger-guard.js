@@ -13,7 +13,6 @@ const PAGE_BIP32_PATH = (account, pageIndex) =>
 
 // the iota lib needs a seed even for transactions without inputs
 const DUMMY_SEED = '9'.repeat(81);
-const MAX_BUNDLE_SIZE = 8;
 
 // derivation rules for the different type of addresses
 const ADDRESS_DERIVATION = (account, pageIndex, keyIndex) => ({
@@ -60,6 +59,8 @@ class LedgerGuard extends BaseGuard {
 
     const { legacy } = await LedgerGuard._checkVersion(hwapp);
     opts.legacy = legacy;
+    // retrieve max bundle size from device
+    opts.maxBundleSize = await hwapp.getAppMaxBundleSize();
 
     const { path, keyIndex } = KEY_ADDRESS_DERIVATION(opts.account);
     await hwapp.setActiveSeed(path, 1);
@@ -73,13 +74,13 @@ class LedgerGuard extends BaseGuard {
   }
 
   getMaxInputs() {
-    const { security, legacy } = this.opts;
+    const { security, legacy, maxBundleSize } = this.opts;
 
     if (legacy) {
       return 2;
     }
     // reserve one trasaction each for output and change
-    return Math.floor((MAX_BUNDLE_SIZE - 2) / security);
+    return Math.floor((maxBundleSize - 2) / security);
   }
 
   getSymmetricKey() {
@@ -143,7 +144,7 @@ class LedgerGuard extends BaseGuard {
 
     // the ledger is only needed, if there are proper inputs
     if (Array.isArray(inputs) && inputs.length) {
-      return await this.hwapp.signTransaction(transfers, inputs, remainder);
+      return await this.hwapp.prepareTransfers(transfers, inputs, remainder);
     }
 
     // no inputs use the regular iota lib with a dummy seed

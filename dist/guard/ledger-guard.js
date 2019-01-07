@@ -28,7 +28,6 @@ var PAGE_BIP32_PATH = function PAGE_BIP32_PATH(account, pageIndex) {
 
 // the iota lib needs a seed even for transactions without inputs
 var DUMMY_SEED = '9'.repeat(81);
-var MAX_BUNDLE_SIZE = 8;
 
 // derivation rules for the different type of addresses
 var ADDRESS_DERIVATION = function ADDRESS_DERIVATION(account, pageIndex, keyIndex) {
@@ -83,14 +82,15 @@ var LedgerGuard = function (_BaseGuard) {
     value: function getMaxInputs() {
       var _opts = this.opts,
           security = _opts.security,
-          legacy = _opts.legacy;
+          legacy = _opts.legacy,
+          maxBundleSize = _opts.maxBundleSize;
 
 
       if (legacy) {
         return 2;
       }
       // reserve one trasaction each for output and change
-      return Math.floor((MAX_BUNDLE_SIZE - 2) / security);
+      return Math.floor((maxBundleSize - 2) / security);
     }
   }, {
     key: 'getSymmetricKey',
@@ -297,7 +297,7 @@ var LedgerGuard = function (_BaseGuard) {
                 }
 
                 _context5.next = 7;
-                return this.hwapp.signTransaction(transfers, inputs, remainder);
+                return this.hwapp.prepareTransfers(transfers, inputs, remainder);
 
               case 7:
                 return _context5.abrupt('return', _context5.sent);
@@ -450,20 +450,25 @@ var LedgerGuard = function (_BaseGuard) {
                 legacy = _ref11.legacy;
 
                 opts.legacy = legacy;
+                // retrieve max bundle size from device
+                _context8.next = 13;
+                return hwapp.getAppMaxBundleSize();
 
+              case 13:
+                opts.maxBundleSize = _context8.sent;
                 _KEY_ADDRESS_DERIVATI = KEY_ADDRESS_DERIVATION(opts.account), path = _KEY_ADDRESS_DERIVATI.path, keyIndex = _KEY_ADDRESS_DERIVATI.keyIndex;
-                _context8.next = 14;
+                _context8.next = 17;
                 return hwapp.setActiveSeed(path, 1);
 
-              case 14:
-                _context8.next = 16;
+              case 17:
+                _context8.next = 19;
                 return hwapp.getAddress(keyIndex);
 
-              case 16:
+              case 19:
                 keyAddress = _context8.sent;
                 return _context8.abrupt('return', new LedgerGuard(hwapp, keyAddress.substr(0, 32), opts));
 
-              case 18:
+              case 21:
               case 'end':
                 return _context8.stop();
             }
